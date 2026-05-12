@@ -4,11 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>ALHAQ SHETRING CENTER</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     
-    <!-- Firebase SDKs -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
-        import { getFirestore, collection, addDoc, getDocs, updateDoc, doc, deleteDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, getDocs, updateDoc, doc, deleteDoc, query, orderBy, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
         
         const firebaseConfig = {
             apiKey: "AIzaSyAa7aEQgZ2-oAFXJuKzII904krR0EJJ9sQ",
@@ -16,8 +16,7 @@
             projectId: "shetring-rental-app",
             storageBucket: "shetring-rental-app.firebasestorage.app",
             messagingSenderId: "604347404108",
-            appId: "1:604347404108:web:e0486b641ef4fdb79009e9",
-            measurementId: "G-E7LWGFNHLX"
+            appId: "1:604347404108:web:e0486b641ef4fdb79009e9"
         };
         
         const app = initializeApp(firebaseConfig);
@@ -32,438 +31,112 @@
         window.deleteDoc = deleteDoc;
         window.query = query;
         window.orderBy = orderBy;
+        window.setDoc = setDoc;
+        window.getDoc = getDoc;
     </script>
     
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Roboto', sans-serif;
-            background: #f5f7fb;
-            padding-bottom: 75px;
-        }
-        
-        /* Main Container */
-        .app-container {
-            max-width: 500px;
-            margin: 0 auto;
-            background: #f5f7fb;
-            min-height: 100vh;
-            position: relative;
-        }
-        
-        /* Header */
-        .app-header {
-            background: linear-gradient(135deg, #1a472a 0%, #0d2818 100%);
-            padding: 20px;
-            text-align: center;
-            position: sticky;
-            top: 0;
-            z-index: 10;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        
-        .app-header h1 {
-            color: white;
-            font-size: 20px;
-            letter-spacing: 1px;
-        }
-        
-        .app-header h1 span {
-            font-size: 12px;
-            opacity: 0.8;
-            display: block;
-            margin-top: 4px;
-        }
-        
-        /* Bottom Tab Bar */
-        .bottom-tab-bar {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            max-width: 500px;
-            margin: 0 auto;
-            background: white;
-            display: flex;
-            justify-content: space-around;
-            align-items: center;
-            padding: 10px 20px 20px;
-            box-shadow: 0 -2px 20px rgba(0,0,0,0.1);
-            border-top-left-radius: 20px;
-            border-top-right-radius: 20px;
-            z-index: 100;
-        }
-        
-        .tab-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 5px;
-            background: none;
-            border: none;
-            cursor: pointer;
-            padding: 8px 20px;
-            border-radius: 30px;
-            transition: all 0.3s;
-            font-family: inherit;
-        }
-        
-        .tab-icon {
-            font-size: 24px;
-        }
-        
-        .tab-label {
-            font-size: 12px;
-            font-weight: 500;
-            color: #888;
-        }
-        
-        .tab-item.active {
-            background: #1a472a10;
-        }
-        
-        .tab-item.active .tab-label {
-            color: #1a472a;
-            font-weight: 600;
-        }
-        
-        /* Content Area */
-        .tab-content {
-            display: none;
-            padding: 15px;
-            animation: fadeIn 0.3s ease;
-        }
-        
-        .tab-content.active {
-            display: block;
-        }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
-        /* Cards */
-        .card {
-            background: white;
-            border-radius: 16px;
-            padding: 20px;
-            margin-bottom: 15px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-        }
-        
-        .card-title {
-            font-size: 18px;
-            font-weight: 600;
-            color: #1a472a;
-            margin-bottom: 15px;
-            border-left: 3px solid #1a472a;
-            padding-left: 12px;
-        }
-        
-        /* Form Elements */
-        .form-grid {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-        
-        .input-field {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #e0e0e0;
-            border-radius: 12px;
-            font-size: 14px;
-            font-family: inherit;
-            background: #f9f9f9;
-            transition: all 0.3s;
-        }
-        
-        .input-field:focus {
-            outline: none;
-            border-color: #1a472a;
-            background: white;
-        }
-        
-        label {
-            font-size: 12px;
-            font-weight: 600;
-            color: #555;
-            margin-bottom: 4px;
-            display: block;
-        }
-        
-        /* Equipment Items */
-        .equipment-item {
-            background: #f9f9f9;
-            border-radius: 12px;
-            padding: 12px;
-            margin-bottom: 10px;
-        }
-        
-        .equipment-row {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-        }
-        
-        .equipment-row select, .equipment-row input {
-            flex: 1;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            font-size: 13px;
-        }
-        
-        .remove-btn {
-            background: #fee2e2;
-            border: none;
-            padding: 8px 12px;
-            border-radius: 8px;
-            color: #c0392b;
-            cursor: pointer;
-            font-size: 12px;
-        }
-        
-        .add-btn {
-            background: #1a472a;
-            color: white;
-            border: none;
-            padding: 10px;
-            border-radius: 30px;
-            font-weight: 600;
-            width: 100%;
-            margin-top: 8px;
-            cursor: pointer;
-        }
-        
-        .save-btn {
-            background: linear-gradient(135deg, #1a472a 0%, #0d2818 100%);
-            color: white;
-            border: none;
-            padding: 14px;
-            border-radius: 30px;
-            font-weight: 600;
-            font-size: 16px;
-            width: 100%;
-            margin-top: 15px;
-            cursor: pointer;
-        }
-        
-        /* Record Cards */
-        .record-card {
-            background: white;
-            border-radius: 14px;
-            padding: 14px;
-            margin-bottom: 12px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            border-left: 4px solid #1a472a;
-        }
-        
-        .record-header {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 8px;
-        }
-        
-        .customer-name {
-            font-weight: 700;
-            font-size: 16px;
-            color: #1a472a;
-        }
-        
-        .record-date {
-            font-size: 11px;
-            color: #888;
-        }
-        
-        .village {
-            font-size: 13px;
-            color: #555;
-            margin-bottom: 6px;
-        }
-        
-        .items-list {
-            font-size: 12px;
-            color: #666;
-            margin: 8px 0;
-            background: #f5f5f5;
-            padding: 8px;
-            border-radius: 8px;
-        }
-        
-        .amount-row {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 8px;
-            padding-top: 8px;
-            border-top: 1px solid #eee;
-            font-size: 13px;
-        }
-        
-        .balance {
-            color: #c0392b;
-            font-weight: bold;
-        }
-        
-        .paid {
-            color: #27ae60;
-        }
-        
-        .status-badge {
-            display: inline-block;
-            padding: 2px 10px;
-            border-radius: 20px;
-            font-size: 10px;
-            font-weight: 600;
-        }
-        
-        .status-pending {
-            background: #fef3c7;
-            color: #d97706;
-        }
-        
-        .status-returned {
-            background: #d1fae5;
-            color: #059669;
-        }
-        
-        .action-buttons {
-            display: flex;
-            gap: 8px;
-            margin-top: 10px;
-        }
-        
-        .return-btn {
-            background: #d1fae5;
-            border: none;
-            padding: 6px 12px;
-            border-radius: 20px;
-            color: #059669;
-            font-size: 11px;
-            cursor: pointer;
-        }
-        
-        .delete-btn {
-            background: #fee2e2;
-            border: none;
-            padding: 6px 12px;
-            border-radius: 20px;
-            color: #c0392b;
-            font-size: 11px;
-            cursor: pointer;
-        }
-        
-        .dues-summary {
-            background: linear-gradient(135deg, #c0392b 0%, #e74c3c 100%);
-            color: white;
-            padding: 15px;
-            border-radius: 14px;
-            text-align: center;
-            margin-bottom: 15px;
-        }
-        
-        .dues-amount {
-            font-size: 28px;
-            font-weight: bold;
-        }
-        
-        .search-box {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #e0e0e0;
-            border-radius: 30px;
-            font-size: 14px;
-            margin-bottom: 15px;
-            background: #f9f9f9;
-        }
-        
-        .empty-state {
-            text-align: center;
-            padding: 40px;
-            color: #888;
-        }
-        
-        footer {
-            text-align: center;
-            padding: 15px;
-            font-size: 10px;
-            color: #aaa;
-        }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family:'Segoe UI',sans-serif; background:#f0f2f5; padding-bottom:75px; }
+        .app-container { max-width:500px; margin:0 auto; background:#f0f2f5; min-height:100vh; }
+        .app-header { background:linear-gradient(135deg,#1a472a,#0d2818); padding:20px; text-align:center; position:sticky; top:0; z-index:10; color:white; }
+        .app-header h1 { font-size:20px; }
+        .app-header i { margin-right:8px; }
+        .bottom-tab-bar { position:fixed; bottom:0; left:0; right:0; max-width:500px; margin:0 auto; background:white; display:flex; justify-content:space-around; padding:10px 20px 20px; border-radius:20px 20px 0 0; box-shadow:0 -2px 20px rgba(0,0,0,0.1); z-index:100; }
+        .tab-item { display:flex; flex-direction:column; align-items:center; background:none; border:none; cursor:pointer; padding:8px 20px; border-radius:30px; }
+        .tab-icon { font-size:22px; }
+        .tab-label { font-size:11px; color:#888; }
+        .tab-item.active .tab-label { color:#1a472a; font-weight:600; }
+        .tab-content { display:none; padding:15px; animation:fadeIn 0.3s; }
+        .tab-content.active { display:block; }
+        @keyframes fadeIn { from{opacity:0;} to{opacity:1;} }
+        .card { background:white; border-radius:16px; padding:18px; margin-bottom:15px; box-shadow:0 2px 8px rgba(0,0,0,0.05); }
+        .card-title { font-size:18px; font-weight:600; color:#1a472a; margin-bottom:15px; border-left:3px solid #1a472a; padding-left:12px; }
+        .form-grid { display:flex; flex-direction:column; gap:12px; }
+        .input-field { width:100%; padding:12px; border:1px solid #e0e0e0; border-radius:12px; background:#f9f9f9; }
+        .input-field:focus { outline:none; border-color:#1a472a; background:white; }
+        label { font-size:12px; font-weight:600; color:#555; margin-bottom:4px; display:block; }
+        .equipment-item { background:#f9f9f9; border-radius:12px; padding:12px; margin-bottom:10px; }
+        .equipment-row { display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
+        .equipment-row select, .equipment-row input { flex:1; min-width:90px; padding:8px; border:1px solid #ddd; border-radius:8px; font-size:12px; }
+        .remove-btn { background:#fee2e2; border:none; padding:6px 10px; border-radius:8px; color:#c0392b; cursor:pointer; }
+        .add-btn, .save-btn { background:#1a472a; color:white; border:none; padding:10px; border-radius:30px; font-weight:600; width:100%; margin-top:8px; cursor:pointer; }
+        .save-btn { background:linear-gradient(135deg,#1a472a,#0d2818); padding:14px; font-size:16px; margin-top:15px; }
+        .record-card { background:white; border-radius:14px; padding:14px; margin-bottom:12px; border-left:4px solid #1a472a; }
+        .customer-name { font-weight:700; color:#1a472a; }
+        .items-list { font-size:11px; background:#f5f5f5; padding:8px; border-radius:8px; margin:8px 0; max-height:100px; overflow-y:auto; }
+        .amount-row { display:flex; justify-content:space-between; font-size:12px; margin-top:8px; padding-top:8px; border-top:1px solid #eee; }
+        .balance { color:#c0392b; font-weight:bold; }
+        .status-badge { display:inline-block; padding:2px 10px; border-radius:20px; font-size:10px; font-weight:600; }
+        .status-pending { background:#fef3c7; color:#d97706; }
+        .status-returned { background:#d1fae5; color:#059669; }
+        .action-buttons { display:flex; gap:8px; margin-top:10px; flex-wrap:wrap; }
+        .return-full-btn, .return-partial-btn, .delete-btn { border:none; padding:6px 12px; border-radius:20px; font-size:11px; cursor:pointer; }
+        .return-full-btn { background:#d1fae5; color:#059669; }
+        .return-partial-btn { background:#fef3c7; color:#d97706; }
+        .delete-btn { background:#fee2e2; color:#c0392b; }
+        .dues-summary { background:linear-gradient(135deg,#c0392b,#e74c3c); color:white; padding:15px; border-radius:14px; text-align:center; margin-bottom:15px; }
+        .dues-amount { font-size:28px; font-weight:bold; }
+        .search-box { width:100%; padding:12px; border-radius:30px; border:1px solid #ddd; margin-bottom:15px; background:white; }
+        .empty-state { text-align:center; padding:40px; color:#888; }
+        .modal { display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.5); z-index:200; align-items:center; justify-content:center; }
+        .modal-content { background:white; width:90%; max-width:400px; border-radius:20px; padding:20px; max-height:80vh; overflow-y:auto; }
+        .return-item-row { display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid #eee; }
+        .return-item-qty { width:60px; padding:4px; border-radius:6px; border:1px solid #ddd; }
+        /* Rates table styling */
+        .rates-table { width:100%; border-collapse:collapse; }
+        .rates-table th, .rates-table td { padding:8px; border-bottom:1px solid #eee; text-align:left; }
+        .rates-table th { background:#1a472a; color:white; }
+        .rate-input { width:80px; padding:6px; border-radius:6px; border:1px solid #ddd; }
+        .small-btn { padding:8px 12px; border-radius:20px; border:none; margin-right:10px; cursor:pointer; }
+        footer { text-align:center; padding:15px; font-size:10px; color:#aaa; }
     </style>
 </head>
 <body>
 <div class="app-container">
-    
-    <!-- Header -->
     <div class="app-header">
-        <h1>🏗️ ALHAQ SHETRING CENTER<br><span>Professional Rental Management</span></h1>
+        <h1><i class="fas fa-hard-hat"></i> ALHAQ SHETRING CENTER<br><span>Professional Rental Management</span></h1>
     </div>
     
-    <!-- Tab Contents -->
+    <!-- Home Tab -->
     <div id="homeTab" class="tab-content active">
         <div class="card">
-            <div class="card-title">📋 All Rental Records</div>
+            <div class="card-title"><i class="fas fa-history"></i> All Rental Records</div>
             <input type="text" id="homeSearch" class="search-box" placeholder="🔍 Search by name, village or mobile...">
             <div id="recordsList"></div>
         </div>
     </div>
     
+    <!-- Create Tab -->
     <div id="createTab" class="tab-content">
         <div class="card">
-            <div class="card-title">➕ New Rental Entry</div>
-            
+            <div class="card-title"><i class="fas fa-plus-circle"></i> New Rental Entry</div>
             <div class="form-grid">
-                <div>
-                    <label>Customer Name *</label>
-                    <input type="text" id="customerName" class="input-field" placeholder="Enter full name">
-                </div>
-                <div>
-                    <label>Father / Husband Name</label>
-                    <input type="text" id="fatherName" class="input-field" placeholder="Enter father/husband name">
-                </div>
-                <div>
-                    <label>Village / Area *</label>
-                    <input type="text" id="village" class="input-field" placeholder="Enter village or area">
-                </div>
-                <div>
-                    <label>Mobile Number</label>
-                    <input type="tel" id="mobile" class="input-field" placeholder="Enter mobile number">
-                </div>
-                <div>
-                    <label>Rental Date *</label>
-                    <input type="date" id="date" class="input-field">
-                </div>
-                <div>
-                    <label>Start Time *</label>
-                    <input type="time" id="time" class="input-field">
-                </div>
+                <div><label>Customer Name *</label><input type="text" id="customerName" class="input-field" placeholder="Full name"></div>
+                <div><label>Father / Husband Name</label><input type="text" id="fatherName" class="input-field" placeholder="Father/Husband name"></div>
+                <div><label>Village / Area *</label><input type="text" id="village" class="input-field" placeholder="Village or area"></div>
+                <div><label>Mobile Number</label><input type="tel" id="mobile" class="input-field" placeholder="Mobile number"></div>
+                <div><label>Rental Date *</label><input type="date" id="date" class="input-field"></div>
+                <div><label>Start Time *</label><input type="time" id="time" class="input-field"></div>
             </div>
-            
-            <div style="margin-top: 15px;">
-                <label>🛠️ Equipment Details</label>
+            <div style="margin-top:15px">
+                <label><i class="fas fa-tools"></i> Equipment Details</label>
                 <div id="itemsContainer"></div>
-                <button type="button" class="add-btn" onclick="addEquipmentRow()" style="background:#27ae60;">+ Add Equipment</button>
+                <button type="button" class="add-btn" onclick="addEquipmentRow()"><i class="fas fa-plus"></i> Add Equipment</button>
             </div>
-            
-            <div style="margin-top: 15px;">
+            <div style="margin-top:15px">
                 <label>Advance Payment (PKR)</label>
                 <input type="number" id="advance" class="input-field" value="0" step="1">
             </div>
-            
-            <button class="save-btn" onclick="saveRental()">💾 Save Rental Entry</button>
+            <button class="save-btn" onclick="saveRental()"><i class="fas fa-save"></i> Save Rental Entry</button>
         </div>
     </div>
     
+    <!-- Dues Tab -->
     <div id="duesTab" class="tab-content">
         <div class="card">
-            <div class="dues-summary" id="duesSummary">
-                <div>💰 Total Outstanding Dues</div>
+            <div class="dues-summary">
+                <div><i class="fas fa-rupee-sign"></i> Total Outstanding Dues</div>
                 <div class="dues-amount" id="totalDuesAmount">PKR 0</div>
             </div>
             <input type="text" id="duesSearch" class="search-box" placeholder="🔍 Search by name or village...">
@@ -471,304 +144,483 @@
         </div>
     </div>
     
-    <!-- Bottom Tab Bar -->
-    <div class="bottom-tab-bar">
-        <button class="tab-item active" onclick="switchTab('home')">
-            <span class="tab-icon">🏠</span>
-            <span class="tab-label">Home</span>
-        </button>
-        <button class="tab-item" onclick="switchTab('create')">
-            <span class="tab-icon">➕</span>
-            <span class="tab-label">Create</span>
-        </button>
-        <button class="tab-item" onclick="switchTab('dues')">
-            <span class="tab-icon">💰</span>
-            <span class="tab-label">Dues</span>
-        </button>
+    <!-- Rates Tab (New) -->
+    <div id="ratesTab" class="tab-content">
+        <div class="card">
+            <div class="card-title"><i class="fas fa-rupee-sign"></i> Customize Daily Rates</div>
+            <p style="font-size:12px; margin-bottom:15px;">Edit rates for each equipment option. Changes will apply to new rentals instantly.</p>
+            <div style="overflow-x:auto;">
+                <table class="rates-table" id="ratesTable">
+                    <thead>
+                        <tr><th>Equipment</th><th>Option</th><th>Rate (PKR/day)</th></tr>
+                    </thead>
+                    <tbody id="ratesTableBody"></tbody>
+                </table>
+            </div>
+            <div style="margin-top:20px; display:flex; gap:10px;">
+                <button class="add-btn" onclick="saveAllRates()" style="background:#27ae60;">💾 Save All Rates</button>
+                <button class="delete-btn" onclick="resetRatesToDefault()">↺ Reset to Default</button>
+            </div>
+        </div>
     </div>
     
+    <!-- Bottom Tab Bar -->
+    <div class="bottom-tab-bar">
+        <button class="tab-item active" onclick="switchTab('home')"><span class="tab-icon"><i class="fas fa-home"></i></span><span class="tab-label">Home</span></button>
+        <button class="tab-item" onclick="switchTab('create')"><span class="tab-icon"><i class="fas fa-plus-circle"></i></span><span class="tab-label">Create</span></button>
+        <button class="tab-item" onclick="switchTab('dues')"><span class="tab-icon"><i class="fas fa-rupee-sign"></i></span><span class="tab-label">Dues</span></button>
+        <button class="tab-item" onclick="switchTab('rates')"><span class="tab-icon"><i class="fas fa-sliders-h"></i></span><span class="tab-label">Rates</span></button>
+    </div>
     <footer>ALHAQ SHETRING CENTER © 2026</footer>
 </div>
 
+<!-- Partial Return Modal -->
+<div id="returnModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header"><strong>📦 Partial Return</strong></div>
+        <div id="modalItemsList"></div>
+        <div class="modal-buttons" style="display:flex; gap:10px; margin-top:15px;">
+            <button class="save-btn" onclick="submitPartialReturn()" style="background:#27ae60; margin:0;">Confirm Return</button>
+            <button class="delete-btn" onclick="closeModal()" style="margin:0;">Cancel</button>
+        </div>
+    </div>
+</div>
+
 <script type="module">
-    import { getFirestore, collection, addDoc, getDocs, updateDoc, doc, deleteDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, getDocs, updateDoc, doc, deleteDoc, query, orderBy, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
     
     const db = getFirestore();
     let allRentals = [];
     let equipmentCounter = 0;
+    let pendingReturnId = null;
     
-    const equipmentOptions = ['Stand', 'Baans', 'Dhiggi', 'Jack', 'Plate', 'Pipe', 'Clamp', 'Other'];
+    // ==================== EQUIPMENT CONFIGURATION ====================
+    // Base config without rates (rates will come from Firebase)
+    const equipmentBase = [
+        { name: "Stand", options: ["8ft", "10ft", "15ft/20ft"] },
+        { name: "Banas/Bashona", options: ["15ft","20ft","25ft","30ft","35ft"] },
+        { name: "Takhtha", options: ["10ft"] },
+        { name: "Dagee", options: ["Lower Quality", "High Quality"] },
+        { name: "Beem Farma", options: ["4inch","8inch","9inch","12inch","18inch"] },
+        { name: "Pailor Farma (4 sides)", options: ["Standard"] },
+        { name: "Pailor Farma (Spherical)", options: ["10ft height","11ft height"] },
+        { name: "Seerhe", options: ["10ft","20ft","25ft","30ft","35ft"] },
+        { name: "Goorha", options: ["4ft","5ft","6ft","7ft","8ft","10ft"] },
+        { name: "Electric Generator", options: ["Standard"] },
+        { name: "LT", options: ["Small","Medium","Large"] },
+        { name: "Grinder Machine (steel cutter)", options: ["Standard"] },
+        { name: "Presser", options: ["Standard"] },
+        { name: "Tatkeee", options: ["Standard"] },
+        { name: "Beilchaa", options: ["Standard"] },
+        { name: "Kodalaaa", options: ["Standard"] },
+        { name: "Drum", options: ["Small","Big"] },
+        { name: "Karheee", options: ["Standard"] },
+        { name: "Saaare", options: ["Spherical (1ft)","Spherical (9inch)","4 Side (9/12inch)","4 Side (1ft)"] },
+        { name: "Hath Gaarhai", options: ["Standard"] }
+    ];
     
-    // Set today's date
-    document.getElementById('date').valueAsDate = new Date();
-    document.getElementById('time').value = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+    // Default rates (fallback)
+    const defaultRates = {
+        "Stand": {"8ft":15, "10ft":20, "15ft/20ft":30},
+        "Banas/Bashona": {"15ft":25,"20ft":30,"25ft":35,"30ft":40,"35ft":45},
+        "Takhtha": {"10ft":20},
+        "Dagee": {"Lower Quality":8, "High Quality":15},
+        "Beem Farma": {"4inch":5,"8inch":8,"9inch":10,"12inch":12,"18inch":15},
+        "Pailor Farma (4 sides)": {"Standard":40},
+        "Pailor Farma (Spherical)": {"10ft height":50,"11ft height":55},
+        "Seerhe": {"10ft":30,"20ft":40,"25ft":45,"30ft":50,"35ft":60},
+        "Goorha": {"4ft":10,"5ft":12,"6ft":15,"7ft":18,"8ft":20,"10ft":25},
+        "Electric Generator": {"Standard":100},
+        "LT": {"Small":30,"Medium":50,"Large":80},
+        "Grinder Machine (steel cutter)": {"Standard":40},
+        "Presser": {"Standard":35},
+        "Tatkeee": {"Standard":8},
+        "Beilchaa": {"Standard":5},
+        "Kodalaaa": {"Standard":5},
+        "Drum": {"Small":15,"Big":25},
+        "Karheee": {"Standard":20},
+        "Saaare": {"Spherical (1ft)":40,"Spherical (9inch)":35,"4 Side (9/12inch)":30,"4 Side (1ft)":38},
+        "Hath Gaarhai": {"Standard":25}
+    };
     
-    function addEquipmentRow(itemName = 'Stand', qty = 0, rate = 0) {
+    let currentRates = {}; // will be loaded from Firebase
+    
+    // Load rates from Firebase
+    async function loadRates() {
+        const ratesDocRef = doc(db, 'settings', 'equipmentRates');
+        const docSnap = await getDoc(ratesDocRef);
+        if (docSnap.exists()) {
+            currentRates = docSnap.data();
+        } else {
+            currentRates = defaultRates;
+            // save defaults to Firebase
+            await setDoc(ratesDocRef, defaultRates);
+        }
+        renderRatesTable();
+    }
+    
+    function renderRatesTable() {
+        const tbody = document.getElementById('ratesTableBody');
+        tbody.innerHTML = '';
+        equipmentBase.forEach(equip => {
+            const equipName = equip.name;
+            equip.options.forEach(opt => {
+                const rate = currentRates[equipName]?.[opt] || defaultRates[equipName]?.[opt] || 0;
+                const row = tbody.insertRow();
+                row.insertCell(0).innerText = equipName;
+                row.insertCell(1).innerText = opt;
+                const rateCell = row.insertCell(2);
+                const input = document.createElement('input');
+                input.type = 'number';
+                input.value = rate;
+                input.className = 'rate-input';
+                input.step = '1';
+                input.dataset.equip = equipName;
+                input.dataset.opt = opt;
+                rateCell.appendChild(input);
+            });
+        });
+    }
+    
+    // Save all rates from the table inputs to Firebase
+    window.saveAllRates = async function() {
+        const inputs = document.querySelectorAll('#ratesTableBody .rate-input');
+        const newRates = JSON.parse(JSON.stringify(defaultRates)); // start fresh
+        // reset newRates structure
+        for (let equip of equipmentBase) {
+            if (!newRates[equip.name]) newRates[equip.name] = {};
+            for (let opt of equip.options) {
+                newRates[equip.name][opt] = defaultRates[equip.name]?.[opt] || 0;
+            }
+        }
+        inputs.forEach(inp => {
+            const equipName = inp.dataset.equip;
+            const opt = inp.dataset.opt;
+            const val = parseFloat(inp.value) || 0;
+            if (!newRates[equipName]) newRates[equipName] = {};
+            newRates[equipName][opt] = val;
+        });
+        try {
+            await setDoc(doc(db, 'settings', 'equipmentRates'), newRates);
+            currentRates = newRates;
+            alert("✅ Rates saved successfully!");
+            renderRatesTable();
+        } catch(e) { alert("Error: "+e.message); }
+    };
+    
+    window.resetRatesToDefault = async function() {
+        if(confirm("Reset all rates to original defaults?")) {
+            await setDoc(doc(db, 'settings', 'equipmentRates'), defaultRates);
+            currentRates = defaultRates;
+            renderRatesTable();
+            alert("✅ Reset to default rates");
+        }
+    };
+    
+    // Helper to get current rate for equip & option
+    function getCurrentRate(equipName, option) {
+        return currentRates[equipName]?.[option] || defaultRates[equipName]?.[option] || 0;
+    }
+    
+    // Add equipment row in rental form (uses current rates)
+    function addEquipmentRow(equipIndex = 0, selectedOption = null, qty = 0, customRate = null) {
         const container = document.getElementById('itemsContainer');
         const rowId = `eq_${Date.now()}_${equipmentCounter++}`;
+        const equip = equipmentBase[equipIndex];
+        const defaultOption = selectedOption || equip.options[0];
+        let rate = customRate !== null ? customRate : getCurrentRate(equip.name, defaultOption);
+        
         const row = document.createElement('div');
         row.className = 'equipment-item';
         row.id = rowId;
         row.innerHTML = `
             <div class="equipment-row">
                 <select class="eq-name">
-                    ${equipmentOptions.map(opt => `<option value="${opt}" ${opt === itemName ? 'selected' : ''}>${opt}</option>`).join('')}
+                    ${equipmentBase.map((e, idx) => `<option value="${idx}" ${idx===equipIndex ? 'selected' : ''}>${e.name}</option>`).join('')}
                 </select>
-                <input type="number" class="eq-qty" value="${qty}" min="0" step="1" placeholder="Qty" style="width:80px">
-                <input type="number" class="eq-rate" value="${rate}" min="0" step="1" placeholder="Rate" style="width:100px">
-                <input type="number" class="eq-total" value="${qty * rate}" readonly style="width:80px; background:#f0f0f0;">
-                <button type="button" class="remove-btn" onclick="this.closest('.equipment-item').remove()">✖</button>
+                <select class="eq-option"></select>
+                <input type="number" class="eq-qty" value="${qty}" min="0" step="1" placeholder="Qty" style="width:70px">
+                <input type="number" class="eq-rate" value="${rate}" min="0" step="1" placeholder="Rate" style="width:80px">
+                <input type="number" class="eq-total" value="${qty * rate}" readonly style="width:70px; background:#f0f0f0;">
+                <button type="button" class="remove-btn" onclick="this.closest('.equipment-item').remove()"><i class="fas fa-trash"></i></button>
             </div>
         `;
         
+        const nameSelect = row.querySelector('.eq-name');
+        const optionSelect = row.querySelector('.eq-option');
         const qtyInput = row.querySelector('.eq-qty');
         const rateInput = row.querySelector('.eq-rate');
         const totalInput = row.querySelector('.eq-total');
         
-        const updateTotal = () => {
-            totalInput.value = (parseFloat(qtyInput.value) || 0) * (parseFloat(rateInput.value) || 0);
-        };
+        function populateOptions() {
+            const idx = parseInt(nameSelect.value);
+            const eq = equipmentBase[idx];
+            optionSelect.innerHTML = eq.options.map(opt => `<option value="${opt}" ${opt === defaultOption ? 'selected' : ''}>${opt}</option>`).join('');
+            const currentOption = optionSelect.value;
+            const newRate = getCurrentRate(eq.name, currentOption);
+            rateInput.value = newRate;
+            updateTotal();
+        }
         
+        function updateTotal() {
+            const q = parseFloat(qtyInput.value) || 0;
+            const r = parseFloat(rateInput.value) || 0;
+            totalInput.value = q * r;
+        }
+        
+        nameSelect.addEventListener('change', () => {
+            populateOptions();
+        });
+        optionSelect.addEventListener('change', () => {
+            const idx = parseInt(nameSelect.value);
+            const eq = equipmentBase[idx];
+            const selectedOpt = optionSelect.value;
+            const newRate = getCurrentRate(eq.name, selectedOpt);
+            rateInput.value = newRate;
+            updateTotal();
+        });
         qtyInput.addEventListener('input', updateTotal);
         rateInput.addEventListener('input', updateTotal);
         
+        populateOptions();
         container.appendChild(row);
     }
     
-    window.addEquipmentRow = addEquipmentRow;
+    window.addEquipmentRow = () => addEquipmentRow(0);
     
-    addEquipmentRow('Stand', 0, 20);
-    addEquipmentRow('Baans', 0, 15);
-    addEquipmentRow('Dhiggi', 0, 30);
-    
+    // Save rental (uses current rates)
     window.saveRental = async function() {
         const customerName = document.getElementById('customerName').value.trim();
         const village = document.getElementById('village').value.trim();
-        
-        if (!customerName || !village) {
-            alert('Please enter Customer Name and Village/Area');
-            return;
-        }
+        if (!customerName || !village) { alert("Please enter Customer Name and Village"); return; }
         
         const items = [];
         const itemDivs = document.querySelectorAll('#itemsContainer .equipment-item');
         let grandTotal = 0;
         
         itemDivs.forEach(div => {
-            const name = div.querySelector('.eq-name').value;
+            const nameIdx = parseInt(div.querySelector('.eq-name').value);
+            const name = equipmentBase[nameIdx].name;
+            const option = div.querySelector('.eq-option').value;
             const qty = parseFloat(div.querySelector('.eq-qty').value) || 0;
             const rate = parseFloat(div.querySelector('.eq-rate').value) || 0;
             const total = qty * rate;
             if (qty > 0) {
-                items.push({ name, quantity: qty, rate, total });
+                items.push({ name, option, quantity: qty, rate, total });
                 grandTotal += total;
             }
         });
         
-        if (items.length === 0) {
-            alert('Please add at least one equipment item with quantity > 0');
-            return;
-        }
+        if (items.length === 0) { alert("Add at least one equipment with quantity > 0"); return; }
         
         const advance = parseFloat(document.getElementById('advance').value) || 0;
         const balance = grandTotal - advance;
         
         const rentalData = {
-            customerName: customerName,
+            customerName, village,
             fatherName: document.getElementById('fatherName').value.trim(),
-            village: village,
             mobile: document.getElementById('mobile').value.trim(),
             rentalDate: document.getElementById('date').value,
             startTime: document.getElementById('time').value,
             items: items,
-            grandTotal: grandTotal,
-            advancePaid: advance,
-            balanceDue: balance,
-            status: balance === 0 ? 'Paid' : 'Pending',
-            returnDate: null,
-            returnTime: null,
-            createdAt: new Date().toISOString()
+            grandTotal, advancePaid: advance, balanceDue: balance,
+            status: balance === 0 ? "Paid" : "Pending",
+            returnLog: []
         };
         
         try {
             await addDoc(collection(db, 'rentals'), rentalData);
-            alert('✅ Rental saved successfully!');
-            
-            document.getElementById('customerName').value = '';
-            document.getElementById('fatherName').value = '';
-            document.getElementById('village').value = '';
-            document.getElementById('mobile').value = '';
-            document.getElementById('advance').value = '0';
-            document.getElementById('itemsContainer').innerHTML = '';
+            alert("✅ Rental saved!");
+            document.getElementById('customerName').value = "";
+            document.getElementById('fatherName').value = "";
+            document.getElementById('village').value = "";
+            document.getElementById('mobile').value = "";
+            document.getElementById('advance').value = "0";
+            document.getElementById('itemsContainer').innerHTML = "";
             equipmentCounter = 0;
-            addEquipmentRow('Stand', 0, 20);
-            addEquipmentRow('Baans', 0, 15);
-            addEquipmentRow('Dhiggi', 0, 30);
-            
+            addEquipmentRow(0, "8ft", 0);
+            addEquipmentRow(1, "15ft", 0);
+            addEquipmentRow(3, "Lower Quality", 0);
+            addEquipmentRow(18, "Spherical (1ft)", 0);
+            addEquipmentRow(19, "Standard", 0);
             loadAllData();
             switchTab('home');
-        } catch (error) {
-            console.error('Error:', error);
-            alert('❌ Error saving: ' + error.message);
-        }
+        } catch(e) { alert("Error: "+e.message); }
     };
     
+    // Load all rentals
     async function loadAllData() {
-        try {
-            const q = query(collection(db, 'rentals'), orderBy('createdAt', 'desc'));
-            const querySnapshot = await getDocs(q);
-            allRentals = [];
-            querySnapshot.forEach(doc => {
-                allRentals.push({ id: doc.id, ...doc.data() });
-            });
-            displayHomeRecords();
-            displayDuesList();
-        } catch (error) {
-            console.error('Error loading:', error);
-        }
+        const q = query(collection(db, 'rentals'), orderBy('createdAt', 'desc'));
+        const snap = await getDocs(q);
+        allRentals = [];
+        snap.forEach(doc => { allRentals.push({ id: doc.id, ...doc.data() }); });
+        displayHomeRecords();
+        displayDuesList();
     }
     
-    function displayHomeRecords(searchTerm = '') {
+    function displayHomeRecords(search = "") {
         const container = document.getElementById('recordsList');
-        let filtered = [...allRentals];
+        let filtered = allRentals.filter(r => 
+            r.customerName.toLowerCase().includes(search) || 
+            r.village.toLowerCase().includes(search) ||
+            (r.mobile && r.mobile.includes(search))
+        );
+        if(filtered.length===0) { container.innerHTML='<div class="empty-state">📭 No records</div>'; return; }
         
-        if (searchTerm) {
-            const term = searchTerm.toLowerCase();
-            filtered = filtered.filter(r => 
-                r.customerName.toLowerCase().includes(term) ||
-                r.village.toLowerCase().includes(term) ||
-                (r.mobile && r.mobile.includes(term))
-            );
-        }
-        
-        if (filtered.length === 0) {
-            container.innerHTML = '<div class="empty-state">📭 No records found</div>';
-            return;
-        }
-        
-        container.innerHTML = filtered.map((record, idx) => {
-            const itemsText = record.items.map(i => `${i.name}:${i.quantity}`).join(', ');
+        container.innerHTML = filtered.map(rec => {
+            let itemsHtml = rec.items.map(i => `<div><i class="fas fa-cog"></i> ${i.name} (${i.option}) ×${i.quantity} @ ₹${i.rate} = ₹${i.total}</div>`).join('');
+            let returnStats = "";
+            if(rec.returnLog && rec.returnLog.length) {
+                returnStats = `<div style="font-size:10px; color:#059669;"><i class="fas fa-undo-alt"></i> Partial returns: ${rec.returnLog.length}</div>`;
+            }
             return `
                 <div class="record-card">
-                    <div class="record-header">
-                        <span class="customer-name">${escapeHtml(record.customerName)}</span>
-                        <span class="record-date">${record.rentalDate || '-'}</span>
-                    </div>
-                    <div class="village">📍 ${escapeHtml(record.village)} ${record.mobile ? `| 📞 ${record.mobile}` : ''}</div>
-                    <div class="items-list">🛠️ ${itemsText}</div>
-                    <div class="amount-row">
-                        <span>Total: PKR ${record.grandTotal}</span>
-                        <span class="paid">Paid: PKR ${record.advancePaid}</span>
-                        <span class="balance">Due: PKR ${record.balanceDue}</span>
-                    </div>
-                    <div>
-                        <span class="status-badge ${record.status === 'Returned' ? 'status-returned' : 'status-pending'}">${record.status}</span>
-                        ${record.returnDate ? `<span style="font-size:11px; margin-left:8px;">↺ Returned: ${record.returnDate}</span>` : ''}
-                    </div>
+                    <div class="record-header" style="display:flex; justify-content:space-between;"><span class="customer-name"><i class="fas fa-user"></i> ${escapeHtml(rec.customerName)}</span><span class="record-date">${rec.rentalDate || '-'}</span></div>
+                    <div class="village"><i class="fas fa-map-marker-alt"></i> ${escapeHtml(rec.village)} ${rec.mobile ? `| 📞 ${rec.mobile}` : ''}</div>
+                    <div class="items-list">${itemsHtml}</div>
+                    <div class="amount-row"><span>Total: PKR ${rec.grandTotal}</span><span class="paid">Paid: PKR ${rec.advancePaid}</span><span class="balance">Due: PKR ${rec.balanceDue}</span></div>
+                    <div><span class="status-badge ${rec.status==='Returned'?'status-returned':'status-pending'}">${rec.status}</span> ${returnStats}</div>
                     <div class="action-buttons">
-                        ${record.status !== 'Returned' ? `<button class="return-btn" onclick="markReturned('${record.id}')">✅ Mark Returned</button>` : ''}
-                        <button class="delete-btn" onclick="deleteRecord('${record.id}')">🗑️ Delete</button>
+                        ${rec.status !== 'Returned' ? `<button class="return-full-btn" onclick="fullReturn('${rec.id}')"><i class="fas fa-check-double"></i> Full Return</button>
+                        <button class="return-partial-btn" onclick="openPartialReturn('${rec.id}')"><i class="fas fa-exchange-alt"></i> Partial Return</button>` : ''}
+                        <button class="delete-btn" onclick="deleteRecord('${rec.id}')"><i class="fas fa-trash"></i> Delete</button>
                     </div>
                 </div>
             `;
         }).join('');
     }
     
-    function displayDuesList(searchTerm = '') {
+    function displayDuesList(search="") {
+        const due = allRentals.filter(r => r.balanceDue > 0 && r.status !== 'Returned');
+        let filtered = due.filter(r => r.customerName.toLowerCase().includes(search) || r.village.toLowerCase().includes(search));
+        const total = filtered.reduce((s,r)=>s+(r.balanceDue||0),0);
+        document.getElementById('totalDuesAmount').innerHTML = `PKR ${total.toLocaleString()}`;
         const container = document.getElementById('duesList');
-        const dueRecords = allRentals.filter(r => r.balanceDue > 0 && r.status !== 'Returned');
-        
-        let filtered = dueRecords;
-        if (searchTerm) {
-            const term = searchTerm.toLowerCase();
-            filtered = filtered.filter(r => 
-                r.customerName.toLowerCase().includes(term) ||
-                r.village.toLowerCase().includes(term)
-            );
-        }
-        
-        const totalDues = filtered.reduce((sum, r) => sum + (r.balanceDue || 0), 0);
-        document.getElementById('totalDuesAmount').innerHTML = `PKR ${totalDues.toLocaleString()}`;
-        
-        if (filtered.length === 0) {
-            container.innerHTML = '<div class="empty-state">🎉 No pending dues! All customers are clear.</div>';
-            return;
-        }
-        
-        container.innerHTML = filtered.map((record, idx) => {
-            const itemsText = record.items.map(i => `${i.name}:${i.quantity}`).join(', ');
-            return `
-                <div class="record-card" style="border-left-color: #c0392b;">
-                    <div class="record-header">
-                        <span class="customer-name">${escapeHtml(record.customerName)}</span>
-                        <span class="record-date">${record.rentalDate || '-'}</span>
-                    </div>
-                    <div class="village">📍 ${escapeHtml(record.village)} ${record.mobile ? `| 📞 ${record.mobile}` : ''}</div>
-                    <div class="items-list">🛠️ ${itemsText}</div>
-                    <div class="amount-row">
-                        <span>Total: PKR ${record.grandTotal}</span>
-                        <span class="paid">Paid: PKR ${record.advancePaid}</span>
-                        <span class="balance">Due: PKR ${record.balanceDue}</span>
-                    </div>
-                    <div class="action-buttons">
-                        <button class="return-btn" onclick="markReturned('${record.id}')">✅ Mark Returned</button>
-                    </div>
-                </div>
-            `;
-        }).join('');
+        if(filtered.length===0) { container.innerHTML='<div class="empty-state">🎉 No dues!</div>'; return; }
+        container.innerHTML = filtered.map(rec => `
+            <div class="record-card" style="border-left-color:#c0392b;">
+                <div><strong>${escapeHtml(rec.customerName)}</strong> | ${rec.rentalDate}</div>
+                <div>📍 ${rec.village} ${rec.mobile ? `📞 ${rec.mobile}` : ''}</div>
+                <div class="amount-row"><span>Total: PKR ${rec.grandTotal}</span><span class="paid">Paid: PKR ${rec.advancePaid}</span><span class="balance">Due: PKR ${rec.balanceDue}</span></div>
+                <div class="action-buttons"><button class="return-full-btn" onclick="fullReturn('${rec.id}')">Full Return</button></div>
+            </div>
+        `).join('');
     }
     
-    window.markReturned = async function(id) {
-        const returnDate = prompt('Enter return date (YYYY-MM-DD):', new Date().toISOString().split('T')[0]);
-        if (!returnDate) return;
-        const returnTime = prompt('Enter return time (HH:MM):', new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }));
-        if (!returnTime) return;
-        
+    // Full return
+    window.fullReturn = async function(id) {
+        const retDate = prompt("Return date (YYYY-MM-DD):", new Date().toISOString().slice(0,10));
+        if(!retDate) return;
+        const retTime = prompt("Return time (HH:MM):", new Date().toLocaleTimeString('en-US', {hour:'2-digit', minute:'2-digit'}));
+        if(!retTime) return;
         try {
-            const rentalRef = doc(db, 'rentals', id);
-            await updateDoc(rentalRef, { returnDate, returnTime, status: 'Returned' });
-            alert('✅ Return recorded!');
+            await updateDoc(doc(db,'rentals',id), { returnDate: retDate, returnTime: retTime, status: "Returned", balanceDue: 0 });
+            alert("✅ Full return recorded");
             loadAllData();
-        } catch (error) {
-            alert('❌ Error: ' + error.message);
+        } catch(e) { alert(e.message); }
+    };
+    
+    // Partial return
+    window.openPartialReturn = function(id) {
+        const rental = allRentals.find(r => r.id === id);
+        if(!rental) return;
+        pendingReturnId = id;
+        const modal = document.getElementById('returnModal');
+        const container = document.getElementById('modalItemsList');
+        container.innerHTML = rental.items.map((item, idx) => `
+            <div class="return-item-row">
+                <span><strong>${item.name}</strong> (${item.option}) - Taken: ${item.quantity}</span>
+                <input type="number" id="ret_qty_${idx}" placeholder="Qty to return" min="0" max="${item.quantity}" value="0" class="return-item-qty">
+            </div>
+        `).join('');
+        modal.style.display = "flex";
+        window._partialReturnItems = rental.items;
+    };
+    
+    window.closeModal = () => {
+        document.getElementById('returnModal').style.display = "none";
+        pendingReturnId = null;
+    };
+    
+    window.submitPartialReturn = async function() {
+        if(!pendingReturnId) return;
+        const rental = allRentals.find(r => r.id === pendingReturnId);
+        if(!rental) return;
+        const items = rental.items;
+        const returnQtys = [];
+        let allZero = true;
+        for(let i=0; i<items.length; i++) {
+            const qtyInput = document.getElementById(`ret_qty_${i}`);
+            if(!qtyInput) continue;
+            const qty = parseInt(qtyInput.value) || 0;
+            returnQtys.push(qty);
+            if(qty > 0) allZero = false;
         }
+        if(allZero) { alert("Please enter at least one quantity to return"); return; }
+        
+        let newItems = [];
+        let newGrandTotal = 0;
+        for(let i=0; i<items.length; i++) {
+            const remaining = items[i].quantity - (returnQtys[i] || 0);
+            if(remaining > 0) {
+                const newItem = { ...items[i], quantity: remaining, total: remaining * items[i].rate };
+                newItems.push(newItem);
+                newGrandTotal += newItem.total;
+            }
+        }
+        const returnLogEntry = { date: new Date().toISOString().slice(0,10), itemsReturned: returnQtys };
+        const newReturnLog = [...(rental.returnLog || []), returnLogEntry];
+        let newStatus = "Pending";
+        let newBalance = newGrandTotal - rental.advancePaid;
+        if(newItems.length === 0) {
+            newStatus = "Returned";
+            newBalance = 0;
+        }
+        try {
+            await updateDoc(doc(db,'rentals',pendingReturnId), {
+                items: newItems,
+                grandTotal: newGrandTotal,
+                balanceDue: newBalance,
+                status: newStatus,
+                returnLog: newReturnLog
+            });
+            alert("✅ Partial return recorded");
+            closeModal();
+            loadAllData();
+        } catch(e) { alert("Error: "+e.message); }
     };
     
     window.deleteRecord = async function(id) {
-        if (confirm('Delete this record permanently?')) {
-            try {
-                await deleteDoc(doc(db, 'rentals', id));
-                alert('✅ Deleted!');
-                loadAllData();
-            } catch (error) {
-                alert('❌ Error: ' + error.message);
-            }
+        if(confirm("Delete permanently?")) {
+            await deleteDoc(doc(db,'rentals',id));
+            loadAllData();
         }
     };
     
-    function escapeHtml(str) { return (str || '').replace(/[&<>]/g, function(m) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m]; }); }
+    function escapeHtml(str) { return (str||'').replace(/[&<>]/g, function(m){return {'&':'&amp;','<':'&lt;','>':'&gt;'}[m];}); }
     
     window.switchTab = function(tab) {
-        document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-        document.querySelectorAll('.tab-item').forEach(btn => btn.classList.remove('active'));
-        
-        if (tab === 'home') {
-            document.getElementById('homeTab').classList.add('active');
-            document.querySelector('.tab-item:first-child').classList.add('active');
-            displayHomeRecords();
-        } else if (tab === 'create') {
-            document.getElementById('createTab').classList.add('active');
-            document.querySelectorAll('.tab-item')[1].classList.add('active');
-        } else if (tab === 'dues') {
-            document.getElementById('duesTab').classList.add('active');
-            document.querySelectorAll('.tab-item')[2].classList.add('active');
-            displayDuesList();
-        }
+        document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+        document.querySelectorAll('.tab-item').forEach(btn=>btn.classList.remove('active'));
+        if(tab==='home') { document.getElementById('homeTab').classList.add('active'); document.querySelector('.tab-item:first-child').classList.add('active'); displayHomeRecords();}
+        else if(tab==='create') { document.getElementById('createTab').classList.add('active'); document.querySelectorAll('.tab-item')[1].classList.add('active');}
+        else if(tab==='dues') { document.getElementById('duesTab').classList.add('active'); document.querySelectorAll('.tab-item')[2].classList.add('active'); displayDuesList();}
+        else if(tab==='rates') { document.getElementById('ratesTab').classList.add('active'); document.querySelectorAll('.tab-item')[3].classList.add('active'); renderRatesTable();}
     };
     
-    document.getElementById('homeSearch')?.addEventListener('input', (e) => displayHomeRecords(e.target.value.toLowerCase()));
-    document.getElementById('duesSearch')?.addEventListener('input', (e) => displayDuesList(e.target.value.toLowerCase()));
+    document.getElementById('homeSearch')?.addEventListener('input', e=>displayHomeRecords(e.target.value.toLowerCase()));
+    document.getElementById('duesSearch')?.addEventListener('input', e=>displayDuesList(e.target.value.toLowerCase()));
+    document.getElementById('date').valueAsDate = new Date();
+    document.getElementById('time').value = new Date().toLocaleTimeString('en-US',{hour:'2-digit', minute:'2-digit'});
     
+    // Initialize: load rates first, then add default rental rows, then load rentals
+    await loadRates();
+    // Add default rows after rates are loaded (so they use current rates)
+    addEquipmentRow(0, "8ft", 0);
+    addEquipmentRow(1, "15ft", 0);
+    addEquipmentRow(3, "Lower Quality", 0);
+    addEquipmentRow(18, "Spherical (1ft)", 0);
+    addEquipmentRow(19, "Standard", 0);
     loadAllData();
 </script>
 </body>
