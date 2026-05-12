@@ -83,12 +83,10 @@
         .modal-content { background:white; width:90%; max-width:400px; border-radius:20px; padding:20px; max-height:80vh; overflow-y:auto; }
         .return-item-row { display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid #eee; }
         .return-item-qty { width:60px; padding:4px; border-radius:6px; border:1px solid #ddd; }
-        /* Rates table styling */
         .rates-table { width:100%; border-collapse:collapse; }
         .rates-table th, .rates-table td { padding:8px; border-bottom:1px solid #eee; text-align:left; }
         .rates-table th { background:#1a472a; color:white; }
         .rate-input { width:80px; padding:6px; border-radius:6px; border:1px solid #ddd; }
-        .small-btn { padding:8px 12px; border-radius:20px; border:none; margin-right:10px; cursor:pointer; }
         footer { text-align:center; padding:15px; font-size:10px; color:#aaa; }
     </style>
 </head>
@@ -144,16 +142,14 @@
         </div>
     </div>
     
-    <!-- Rates Tab (New) -->
+    <!-- Rates Tab -->
     <div id="ratesTab" class="tab-content">
         <div class="card">
             <div class="card-title"><i class="fas fa-rupee-sign"></i> Customize Daily Rates</div>
             <p style="font-size:12px; margin-bottom:15px;">Edit rates for each equipment option. Changes will apply to new rentals instantly.</p>
             <div style="overflow-x:auto;">
                 <table class="rates-table" id="ratesTable">
-                    <thead>
-                        <tr><th>Equipment</th><th>Option</th><th>Rate (PKR/day)</th></tr>
-                    </thead>
+                    <thead><tr><th>Equipment</th><th>Option</th><th>Rate (PKR/day)</th></tr></thead>
                     <tbody id="ratesTableBody"></tbody>
                 </table>
             </div>
@@ -195,7 +191,6 @@
     let pendingReturnId = null;
     
     // ==================== EQUIPMENT CONFIGURATION ====================
-    // Base config without rates (rates will come from Firebase)
     const equipmentBase = [
         { name: "Stand", options: ["8ft", "10ft", "15ft/20ft"] },
         { name: "Banas/Bashona", options: ["15ft","20ft","25ft","30ft","35ft"] },
@@ -219,7 +214,6 @@
         { name: "Hath Gaarhai", options: ["Standard"] }
     ];
     
-    // Default rates (fallback)
     const defaultRates = {
         "Stand": {"8ft":15, "10ft":20, "15ft/20ft":30},
         "Banas/Bashona": {"15ft":25,"20ft":30,"25ft":35,"30ft":40,"35ft":45},
@@ -243,9 +237,8 @@
         "Hath Gaarhai": {"Standard":25}
     };
     
-    let currentRates = {}; // will be loaded from Firebase
+    let currentRates = {};
     
-    // Load rates from Firebase
     async function loadRates() {
         const ratesDocRef = doc(db, 'settings', 'equipmentRates');
         const docSnap = await getDoc(ratesDocRef);
@@ -253,7 +246,6 @@
             currentRates = docSnap.data();
         } else {
             currentRates = defaultRates;
-            // save defaults to Firebase
             await setDoc(ratesDocRef, defaultRates);
         }
         renderRatesTable();
@@ -263,11 +255,10 @@
         const tbody = document.getElementById('ratesTableBody');
         tbody.innerHTML = '';
         equipmentBase.forEach(equip => {
-            const equipName = equip.name;
             equip.options.forEach(opt => {
-                const rate = currentRates[equipName]?.[opt] || defaultRates[equipName]?.[opt] || 0;
+                const rate = currentRates[equip.name]?.[opt] || defaultRates[equip.name]?.[opt] || 0;
                 const row = tbody.insertRow();
-                row.insertCell(0).innerText = equipName;
+                row.insertCell(0).innerText = equip.name;
                 row.insertCell(1).innerText = opt;
                 const rateCell = row.insertCell(2);
                 const input = document.createElement('input');
@@ -275,24 +266,16 @@
                 input.value = rate;
                 input.className = 'rate-input';
                 input.step = '1';
-                input.dataset.equip = equipName;
+                input.dataset.equip = equip.name;
                 input.dataset.opt = opt;
                 rateCell.appendChild(input);
             });
         });
     }
     
-    // Save all rates from the table inputs to Firebase
     window.saveAllRates = async function() {
         const inputs = document.querySelectorAll('#ratesTableBody .rate-input');
-        const newRates = JSON.parse(JSON.stringify(defaultRates)); // start fresh
-        // reset newRates structure
-        for (let equip of equipmentBase) {
-            if (!newRates[equip.name]) newRates[equip.name] = {};
-            for (let opt of equip.options) {
-                newRates[equip.name][opt] = defaultRates[equip.name]?.[opt] || 0;
-            }
-        }
+        const newRates = JSON.parse(JSON.stringify(defaultRates));
         inputs.forEach(inp => {
             const equipName = inp.dataset.equip;
             const opt = inp.dataset.opt;
@@ -303,26 +286,24 @@
         try {
             await setDoc(doc(db, 'settings', 'equipmentRates'), newRates);
             currentRates = newRates;
-            alert("✅ Rates saved successfully!");
+            alert("✅ Rates saved!");
             renderRatesTable();
         } catch(e) { alert("Error: "+e.message); }
     };
     
     window.resetRatesToDefault = async function() {
-        if(confirm("Reset all rates to original defaults?")) {
+        if(confirm("Reset all rates?")) {
             await setDoc(doc(db, 'settings', 'equipmentRates'), defaultRates);
             currentRates = defaultRates;
             renderRatesTable();
-            alert("✅ Reset to default rates");
+            alert("✅ Reset to default");
         }
     };
     
-    // Helper to get current rate for equip & option
     function getCurrentRate(equipName, option) {
         return currentRates[equipName]?.[option] || defaultRates[equipName]?.[option] || 0;
     }
     
-    // Add equipment row in rental form (uses current rates)
     function addEquipmentRow(equipIndex = 0, selectedOption = null, qty = 0, customRate = null) {
         const container = document.getElementById('itemsContainer');
         const rowId = `eq_${Date.now()}_${equipmentCounter++}`;
@@ -368,14 +349,11 @@
             totalInput.value = q * r;
         }
         
-        nameSelect.addEventListener('change', () => {
-            populateOptions();
-        });
+        nameSelect.addEventListener('change', () => populateOptions());
         optionSelect.addEventListener('change', () => {
             const idx = parseInt(nameSelect.value);
             const eq = equipmentBase[idx];
-            const selectedOpt = optionSelect.value;
-            const newRate = getCurrentRate(eq.name, selectedOpt);
+            const newRate = getCurrentRate(eq.name, optionSelect.value);
             rateInput.value = newRate;
             updateTotal();
         });
@@ -388,7 +366,7 @@
     
     window.addEquipmentRow = () => addEquipmentRow(0);
     
-    // Save rental (uses current rates)
+    // ========== FIXED SAVE FUNCTION : includes createdAt ==========
     window.saveRental = async function() {
         const customerName = document.getElementById('customerName').value.trim();
         const village = document.getElementById('village').value.trim();
@@ -416,6 +394,7 @@
         const advance = parseFloat(document.getElementById('advance').value) || 0;
         const balance = grandTotal - advance;
         
+        // IMPORTANT: Added createdAt field for ordering
         const rentalData = {
             customerName, village,
             fatherName: document.getElementById('fatherName').value.trim(),
@@ -425,12 +404,14 @@
             items: items,
             grandTotal, advancePaid: advance, balanceDue: balance,
             status: balance === 0 ? "Paid" : "Pending",
-            returnLog: []
+            returnLog: [],
+            createdAt: new Date().toISOString()   // <-- FIXED
         };
         
         try {
             await addDoc(collection(db, 'rentals'), rentalData);
             alert("✅ Rental saved!");
+            // Reset form
             document.getElementById('customerName').value = "";
             document.getElementById('fatherName').value = "";
             document.getElementById('village').value = "";
@@ -448,40 +429,59 @@
         } catch(e) { alert("Error: "+e.message); }
     };
     
-    // Load all rentals
+    // Load all rentals - order by createdAt descending
     async function loadAllData() {
-        const q = query(collection(db, 'rentals'), orderBy('createdAt', 'desc'));
-        const snap = await getDocs(q);
-        allRentals = [];
-        snap.forEach(doc => { allRentals.push({ id: doc.id, ...doc.data() }); });
-        displayHomeRecords();
-        displayDuesList();
+        try {
+            const q = query(collection(db, 'rentals'), orderBy('createdAt', 'desc'));
+            const snap = await getDocs(q);
+            allRentals = [];
+            snap.forEach(doc => { allRentals.push({ id: doc.id, ...doc.data() }); });
+            displayHomeRecords();
+            displayDuesList();
+        } catch (err) {
+            console.error("Load error:", err);
+            // Fallback: try without ordering
+            const q2 = query(collection(db, 'rentals'));
+            const snap2 = await getDocs(q2);
+            allRentals = [];
+            snap2.forEach(doc => { allRentals.push({ id: doc.id, ...doc.data() }); });
+            displayHomeRecords();
+            displayDuesList();
+        }
     }
     
     function displayHomeRecords(search = "") {
         const container = document.getElementById('recordsList');
         let filtered = allRentals.filter(r => 
-            r.customerName.toLowerCase().includes(search) || 
-            r.village.toLowerCase().includes(search) ||
+            r.customerName?.toLowerCase().includes(search) || 
+            r.village?.toLowerCase().includes(search) ||
             (r.mobile && r.mobile.includes(search))
         );
-        if(filtered.length===0) { container.innerHTML='<div class="empty-state">📭 No records</div>'; return; }
+        if(filtered.length===0) { container.innerHTML='<div class="empty-state">📭 No records found</div>'; return; }
         
         container.innerHTML = filtered.map(rec => {
-            let itemsHtml = rec.items.map(i => `<div><i class="fas fa-cog"></i> ${i.name} (${i.option}) ×${i.quantity} @ ₹${i.rate} = ₹${i.total}</div>`).join('');
+            let itemsHtml = rec.items?.map(i => `<div><i class="fas fa-cog"></i> ${i.name} (${i.option}) ×${i.quantity} @ ₹${i.rate} = ₹${i.total}</div>`).join('') || '';
             let returnStats = "";
             if(rec.returnLog && rec.returnLog.length) {
                 returnStats = `<div style="font-size:10px; color:#059669;"><i class="fas fa-undo-alt"></i> Partial returns: ${rec.returnLog.length}</div>`;
             }
             return `
                 <div class="record-card">
-                    <div class="record-header" style="display:flex; justify-content:space-between;"><span class="customer-name"><i class="fas fa-user"></i> ${escapeHtml(rec.customerName)}</span><span class="record-date">${rec.rentalDate || '-'}</span></div>
+                    <div class="record-header" style="display:flex; justify-content:space-between;">
+                        <span class="customer-name"><i class="fas fa-user"></i> ${escapeHtml(rec.customerName)}</span>
+                        <span class="record-date">${rec.rentalDate || '-'}</span>
+                    </div>
                     <div class="village"><i class="fas fa-map-marker-alt"></i> ${escapeHtml(rec.village)} ${rec.mobile ? `| 📞 ${rec.mobile}` : ''}</div>
                     <div class="items-list">${itemsHtml}</div>
-                    <div class="amount-row"><span>Total: PKR ${rec.grandTotal}</span><span class="paid">Paid: PKR ${rec.advancePaid}</span><span class="balance">Due: PKR ${rec.balanceDue}</span></div>
+                    <div class="amount-row">
+                        <span>Total: PKR ${rec.grandTotal}</span>
+                        <span class="paid">Paid: PKR ${rec.advancePaid}</span>
+                        <span class="balance">Due: PKR ${rec.balanceDue}</span>
+                    </div>
                     <div><span class="status-badge ${rec.status==='Returned'?'status-returned':'status-pending'}">${rec.status}</span> ${returnStats}</div>
                     <div class="action-buttons">
-                        ${rec.status !== 'Returned' ? `<button class="return-full-btn" onclick="fullReturn('${rec.id}')"><i class="fas fa-check-double"></i> Full Return</button>
+                        ${rec.status !== 'Returned' ? `
+                        <button class="return-full-btn" onclick="fullReturn('${rec.id}')"><i class="fas fa-check-double"></i> Full Return</button>
                         <button class="return-partial-btn" onclick="openPartialReturn('${rec.id}')"><i class="fas fa-exchange-alt"></i> Partial Return</button>` : ''}
                         <button class="delete-btn" onclick="deleteRecord('${rec.id}')"><i class="fas fa-trash"></i> Delete</button>
                     </div>
@@ -492,7 +492,7 @@
     
     function displayDuesList(search="") {
         const due = allRentals.filter(r => r.balanceDue > 0 && r.status !== 'Returned');
-        let filtered = due.filter(r => r.customerName.toLowerCase().includes(search) || r.village.toLowerCase().includes(search));
+        let filtered = due.filter(r => r.customerName?.toLowerCase().includes(search) || r.village?.toLowerCase().includes(search));
         const total = filtered.reduce((s,r)=>s+(r.balanceDue||0),0);
         document.getElementById('totalDuesAmount').innerHTML = `PKR ${total.toLocaleString()}`;
         const container = document.getElementById('duesList');
@@ -507,7 +507,6 @@
         `).join('');
     }
     
-    // Full return
     window.fullReturn = async function(id) {
         const retDate = prompt("Return date (YYYY-MM-DD):", new Date().toISOString().slice(0,10));
         if(!retDate) return;
@@ -520,7 +519,6 @@
         } catch(e) { alert(e.message); }
     };
     
-    // Partial return
     window.openPartialReturn = function(id) {
         const rental = allRentals.find(r => r.id === id);
         if(!rental) return;
@@ -534,7 +532,6 @@
             </div>
         `).join('');
         modal.style.display = "flex";
-        window._partialReturnItems = rental.items;
     };
     
     window.closeModal = () => {
@@ -602,10 +599,22 @@
     window.switchTab = function(tab) {
         document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
         document.querySelectorAll('.tab-item').forEach(btn=>btn.classList.remove('active'));
-        if(tab==='home') { document.getElementById('homeTab').classList.add('active'); document.querySelector('.tab-item:first-child').classList.add('active'); displayHomeRecords();}
-        else if(tab==='create') { document.getElementById('createTab').classList.add('active'); document.querySelectorAll('.tab-item')[1].classList.add('active');}
-        else if(tab==='dues') { document.getElementById('duesTab').classList.add('active'); document.querySelectorAll('.tab-item')[2].classList.add('active'); displayDuesList();}
-        else if(tab==='rates') { document.getElementById('ratesTab').classList.add('active'); document.querySelectorAll('.tab-item')[3].classList.add('active'); renderRatesTable();}
+        if(tab==='home') { 
+            document.getElementById('homeTab').classList.add('active'); 
+            document.querySelector('.tab-item:first-child').classList.add('active'); 
+            displayHomeRecords();
+        } else if(tab==='create') { 
+            document.getElementById('createTab').classList.add('active'); 
+            document.querySelectorAll('.tab-item')[1].classList.add('active');
+        } else if(tab==='dues') { 
+            document.getElementById('duesTab').classList.add('active'); 
+            document.querySelectorAll('.tab-item')[2].classList.add('active'); 
+            displayDuesList();
+        } else if(tab==='rates') { 
+            document.getElementById('ratesTab').classList.add('active'); 
+            document.querySelectorAll('.tab-item')[3].classList.add('active'); 
+            renderRatesTable();
+        }
     };
     
     document.getElementById('homeSearch')?.addEventListener('input', e=>displayHomeRecords(e.target.value.toLowerCase()));
@@ -613,15 +622,15 @@
     document.getElementById('date').valueAsDate = new Date();
     document.getElementById('time').value = new Date().toLocaleTimeString('en-US',{hour:'2-digit', minute:'2-digit'});
     
-    // Initialize: load rates first, then add default rental rows, then load rentals
+    // Initialize
     await loadRates();
-    // Add default rows after rates are loaded (so they use current rates)
+    // Add default rows after rates loaded
     addEquipmentRow(0, "8ft", 0);
     addEquipmentRow(1, "15ft", 0);
     addEquipmentRow(3, "Lower Quality", 0);
     addEquipmentRow(18, "Spherical (1ft)", 0);
     addEquipmentRow(19, "Standard", 0);
-    loadAllData();
+    await loadAllData();
 </script>
 </body>
 </html>
