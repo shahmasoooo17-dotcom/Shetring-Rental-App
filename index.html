@@ -3,11 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>ALHAQ SHETRING CENTER</title>
+    <title>ALHAQ SHETRING | Pro</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
-        import { getFirestore, collection, addDoc, getDocs, updateDoc, doc, deleteDoc } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, getDocs, updateDoc, doc, deleteDoc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
         
         const firebaseConfig = {
             apiKey: "AIzaSyAa7aEQgZ2-oAFXJuKzII904krR0EJJ9sQ",
@@ -21,126 +22,283 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         
-        window.db = db;
-        window.collection = collection;
-        window.addDoc = addDoc;
-        window.getDocs = getDocs;
-        window.updateDoc = updateDoc;
-        window.doc = doc;
-        window.deleteDoc = deleteDoc;
+        Object.assign(window, { db, collection, addDoc, getDocs, updateDoc, doc, deleteDoc, setDoc, getDoc });
     </script>
     <style>
-        /* same styles as before – keep for brevity, but you can copy from previous */
-        * { margin:0; padding:0; box-sizing:border-box; }
-        body { font-family:'Segoe UI',sans-serif; background:#f0f2f5; padding-bottom:75px; }
-        .app-container { max-width:500px; margin:0 auto; background:#f0f2f5; min-height:100vh; }
-        .app-header { background:linear-gradient(135deg,#1a472a,#0d2818); padding:20px; text-align:center; color:white; }
-        .bottom-tab-bar { position:fixed; bottom:0; left:0; right:0; max-width:500px; margin:0 auto; background:white; display:flex; justify-content:space-around; padding:10px 20px 20px; border-radius:20px 20px 0 0; }
-        .tab-item { display:flex; flex-direction:column; align-items:center; background:none; border:none; cursor:pointer; padding:8px 20px; border-radius:30px; }
-        .tab-icon { font-size:22px; }
-        .tab-label { font-size:11px; color:#888; }
-        .tab-item.active .tab-label { color:#1a472a; font-weight:600; }
-        .tab-content { display:none; padding:15px; }
-        .tab-content.active { display:block; }
-        .card { background:white; border-radius:16px; padding:18px; margin-bottom:15px; box-shadow:0 2px 8px rgba(0,0,0,0.05); }
-        .card-title { font-size:18px; font-weight:600; color:#1a472a; margin-bottom:15px; border-left:3px solid #1a472a; padding-left:12px; }
-        .input-field { width:100%; padding:12px; border:1px solid #ddd; border-radius:12px; background:#f9f9f9; margin-top:4px; }
-        label { font-size:12px; font-weight:600; color:#555; }
-        .equipment-item { background:#f9f9f9; border-radius:12px; padding:12px; margin-bottom:10px; }
-        .equipment-row { display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
-        .equipment-row select, .equipment-row input { flex:1; min-width:90px; padding:8px; border:1px solid #ddd; border-radius:8px; }
-        .remove-btn { background:#fee2e2; border:none; padding:6px 10px; border-radius:8px; color:#c0392b; cursor:pointer; }
-        .add-btn, .save-btn { background:#1a472a; color:white; border:none; padding:10px; border-radius:30px; font-weight:600; width:100%; margin-top:8px; cursor:pointer; }
-        .save-btn { background:linear-gradient(135deg,#1a472a,#0d2818); padding:14px; font-size:16px; }
-        .record-card { background:white; border-radius:14px; padding:14px; margin-bottom:12px; border-left:4px solid #1a472a; }
-        .customer-name { font-weight:700; color:#1a472a; }
-        .items-list { font-size:11px; background:#f5f5f5; padding:8px; border-radius:8px; margin:8px 0; }
-        .amount-row { display:flex; justify-content:space-between; font-size:12px; margin-top:8px; padding-top:8px; border-top:1px solid #eee; }
-        .balance { color:#c0392b; font-weight:bold; }
-        .status-badge { display:inline-block; padding:2px 10px; border-radius:20px; font-size:10px; }
-        .status-pending { background:#fef3c7; color:#d97706; }
-        .status-returned { background:#d1fae5; color:#059669; }
-        .action-buttons { display:flex; gap:8px; margin-top:10px; flex-wrap:wrap; }
-        .return-full-btn, .return-partial-btn, .delete-btn { border:none; padding:6px 12px; border-radius:20px; font-size:11px; cursor:pointer; }
-        .return-full-btn { background:#d1fae5; color:#059669; }
-        .return-partial-btn { background:#fef3c7; color:#d97706; }
-        .delete-btn { background:#fee2e2; color:#c0392b; }
-        .dues-summary { background:linear-gradient(135deg,#c0392b,#e74c3c); color:white; padding:15px; border-radius:14px; text-align:center; margin-bottom:15px; }
-        .dues-amount { font-size:28px; font-weight:bold; }
-        .search-box { width:100%; padding:12px; border-radius:30px; border:1px solid #ddd; margin-bottom:15px; }
-        .empty-state { text-align:center; padding:40px; color:#888; }
-        .modal { display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.5); z-index:200; align-items:center; justify-content:center; }
-        .modal-content { background:white; width:90%; max-width:400px; border-radius:20px; padding:20px; }
-        .return-item-row { display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid #eee; }
-        .return-item-qty { width:60px; padding:4px; border-radius:6px; border:1px solid #ddd; }
-        .rates-table { width:100%; border-collapse:collapse; }
-        .rates-table th, .rates-table td { padding:8px; border-bottom:1px solid #eee; text-align:left; }
-        .rates-table th { background:#1a472a; color:white; }
-        .rate-input { width:80px; padding:6px; border-radius:6px; border:1px solid #ddd; }
-        footer { text-align:center; padding:15px; font-size:10px; color:#aaa; }
+        :root {
+            --primary: #059669;
+            --primary-dark: #064e3b;
+            --secondary: #64748b;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --success: #10b981;
+            --bg: #f8fafc;
+            --card: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --radius: 16px;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+        }
+
+        * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color: transparent; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); color: var(--text-main); line-height: 1.5; }
+        
+        .app-container { max-width: 500px; margin: 0 auto; min-height: 100vh; position: relative; padding-bottom: 90px; }
+
+        /* Header */
+        .app-header { 
+            background: linear-gradient(135deg, var(--primary-dark), var(--primary)); 
+            padding: 30px 20px; 
+            color: white; 
+            border-radius: 0 0 30px 30px;
+            box-shadow: var(--shadow);
+            margin-bottom: 20px;
+        }
+        .app-header h1 { font-size: 20px; font-weight: 700; letter-spacing: -0.5px; display: flex; align-items: center; gap: 10px; }
+        .app-header span { font-size: 12px; opacity: 0.8; font-weight: 400; display: block; margin-top: 4px; }
+
+        /* Navigation */
+        .bottom-tab-bar { 
+            position: fixed; bottom: 15px; left: 15px; right: 15px; max-width: 470px; margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px);
+            display: flex; justify-content: space-around; padding: 12px; 
+            border-radius: 24px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); border: 1px solid rgba(255,255,255,0.3);
+            z-index: 1000;
+        }
+        .tab-item { display: flex; flex-direction: column; align-items: center; background: none; border: none; cursor: pointer; color: var(--secondary); transition: all 0.3s; flex: 1; }
+        .tab-item i { font-size: 20px; margin-bottom: 4px; }
+        .tab-item span { font-size: 10px; font-weight: 600; }
+        .tab-item.active { color: var(--primary); transform: translateY(-2px); }
+
+        /* Content Areas */
+        .tab-content { display: none; padding: 0 15px; animation: fadeIn 0.4s ease; }
+        .tab-content.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Cards & Inputs */
+        .card { background: var(--card); border-radius: var(--radius); padding: 20px; margin-bottom: 15px; box-shadow: var(--shadow); border: 1px solid #f1f5f9; }
+        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .card-title { font-size: 16px; font-weight: 700; color: var(--primary-dark); display: flex; align-items: center; gap: 8px; }
+        
+        .input-group { margin-bottom: 15px; }
+        .input-group label { display: block; font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 6px; margin-left: 4px; }
+        .input-field { width: 100%; padding: 12px 16px; border: 1.5px solid #e2e8f0; border-radius: 12px; font-size: 14px; transition: all 0.2s; outline: none; }
+        .input-field:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1); }
+
+        /* Equipment Rows */
+        .equipment-item { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px; padding: 12px; margin-bottom: 12px; position: relative; }
+        .eq-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 10px; margin-bottom: 10px; }
+        .eq-sub-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+        .remove-row { position: absolute; top: -8px; right: -8px; background: var(--danger); color: white; border: none; width: 22px; height: 22px; border-radius: 50%; font-size: 10px; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+
+        /* Buttons */
+        .btn { border: none; border-radius: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; font-family: inherit; }
+        .btn-primary { background: var(--primary); color: white; width: 100%; padding: 14px; font-size: 15px; }
+        .btn-primary:active { transform: scale(0.98); background: var(--primary-dark); }
+        .btn-outline { background: white; border: 1.5px solid var(--primary); color: var(--primary); padding: 10px; font-size: 13px; width: 100%; margin-top: 10px; }
+        .btn-small { padding: 6px 12px; font-size: 11px; border-radius: 8px; }
+
+        /* Record Cards */
+        .record-card { background: white; border-radius: 16px; padding: 16px; margin-bottom: 12px; box-shadow: var(--shadow); border-left: 5px solid var(--primary); position: relative; }
+        .record-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
+        .record-name { font-size: 15px; font-weight: 700; color: var(--text-main); }
+        .record-date { font-size: 11px; color: var(--text-muted); }
+        .record-info { font-size: 13px; color: var(--text-muted); margin-bottom: 10px; display: flex; flex-wrap: wrap; gap: 10px; }
+        .record-badge { font-size: 10px; padding: 4px 10px; border-radius: 20px; font-weight: 600; text-transform: uppercase; }
+        .badge-pending { background: #fff7ed; color: #c2410c; }
+        .badge-returned { background: #f0fdf4; color: #15803d; }
+        
+        .items-summary { background: #f1f5f9; border-radius: 10px; padding: 10px; font-size: 12px; margin-bottom: 12px; }
+        .item-line { display: flex; justify-content: space-between; margin-bottom: 4px; color: #475569; }
+
+        .record-footer { display: flex; justify-content: space-between; align-items: center; padding-top: 10px; border-top: 1px dashed #e2e8f0; }
+        .record-total { font-size: 14px; font-weight: 700; color: var(--primary-dark); }
+
+        /* Dues Tab Specific */
+        .dues-hero { background: linear-gradient(135deg, #ef4444, #991b1b); color: white; padding: 25px; border-radius: 20px; text-align: center; margin-bottom: 20px; }
+        .dues-hero h2 { font-size: 32px; font-weight: 800; margin: 5px 0; }
+        .dues-hero p { font-size: 13px; opacity: 0.9; }
+
+        /* About Tab Styles */
+        .profile-card { text-align: center; }
+        .profile-img { width: 100px; height: 100px; border-radius: 50%; object-fit: cover; margin-bottom: 15px; border: 4px solid var(--primary); }
+        .ceo-name { font-size: 20px; font-weight: 700; color: var(--primary-dark); }
+        .ceo-title { font-size: 13px; color: var(--text-muted); margin-bottom: 10px; }
+        .ceo-bio { font-size: 13px; color: var(--text-main); margin: 15px 0; line-height: 1.5; }
+        .contact-info { background: #f1f5f9; border-radius: 12px; padding: 10px; font-size: 12px; }
+        .contact-info i { width: 20px; color: var(--primary); }
+
+        .equipment-gallery { display: flex; flex-direction: column; gap: 15px; }
+        .equip-item { display: flex; gap: 12px; background: white; border-radius: 14px; padding: 10px; box-shadow: var(--shadow); align-items: center; }
+        .equip-img { width: 60px; height: 60px; object-fit: cover; border-radius: 12px; background: #f1f5f9; }
+        .equip-details { flex: 1; }
+        .equip-name { font-weight: 700; font-size: 14px; }
+        .equip-options { font-size: 11px; color: var(--text-muted); }
+
+        /* Modal */
+        .modal { display:none; position:fixed; inset:0; background:rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); z-index: 2000; align-items:center; justify-content:center; padding:20px; }
+        .modal-content { background:white; width:100%; max-width:400px; border-radius:24px; padding:24px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); animation: modalIn 0.3s ease; }
+        @keyframes modalIn { from { opacity: 0; scale: 0.9; } to { opacity: 1; scale: 1; } }
+
+        /* Utilities */
+        .search-container { position: relative; margin-bottom: 15px; }
+        .search-container i { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--text-muted); }
+        .search-box { padding-left: 40px !important; }
+        .empty-state { text-align:center; padding: 60px 20px; color: var(--text-muted); }
+        .empty-state i { font-size: 48px; margin-bottom: 15px; opacity: 0.2; }
     </style>
 </head>
 <body>
 <div class="app-container">
     <div class="app-header">
-        <h1><i class="fas fa-hard-hat"></i> ALHAQ SHETRING CENTER<br><span>Professional Rental Management</span></h1>
+        <h1><i class="fas fa-layer-group"></i> ALHAQ SHETRING PRO</h1>
+        <span>Rental Management System • v2.1</span>
     </div>
     
+    <!-- HOME TAB -->
     <div id="homeTab" class="tab-content active">
-        <div class="card">
-            <div class="card-title"><i class="fas fa-history"></i> All Rental Records</div>
-            <input type="text" id="homeSearch" class="search-box" placeholder="🔍 Search by name, village or mobile...">
-            <div id="recordsList"></div>
+        <div class="search-container">
+            <i class="fas fa-search"></i>
+            <input type="text" id="homeSearch" class="input-field search-box" placeholder="Search customer, area, mobile...">
         </div>
+        <div id="recordsList"></div>
     </div>
     
+    <!-- CREATE TAB -->
     <div id="createTab" class="tab-content">
         <div class="card">
-            <div class="card-title"><i class="fas fa-plus-circle"></i> New Rental Entry</div>
-            <div class="form-grid">
-                <div><label>Customer Name *</label><input type="text" id="customerName" class="input-field" placeholder="Full name"></div>
-                <div><label>Father / Husband Name</label><input type="text" id="fatherName" class="input-field"></div>
-                <div><label>Village / Area *</label><input type="text" id="village" class="input-field"></div>
-                <div><label>Mobile Number</label><input type="tel" id="mobile" class="input-field"></div>
-                <div><label>Rental Date *</label><input type="date" id="date" class="input-field"></div>
-                <div><label>Start Time *</label><input type="time" id="time" class="input-field"></div>
+            <div class="card-header">
+                <div class="card-title"><i class="fas fa-user-plus"></i> Customer Info</div>
             </div>
-            <div style="margin-top:15px"><label>Equipment Details</label><div id="itemsContainer"></div><button type="button" class="add-btn" onclick="addEquipmentRow()">+ Add Equipment</button></div>
-            <div style="margin-top:15px"><label>Advance Payment (PKR)</label><input type="number" id="advance" class="input-field" value="0"></div>
-            <button class="save-btn" onclick="saveRental()">💾 Save Rental Entry</button>
+            <div class="input-group">
+                <label>Customer Name *</label>
+                <input type="text" id="customerName" class="input-field" placeholder="Full Name">
+            </div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px">
+                <div class="input-group">
+                    <label>Village/Area *</label>
+                    <input type="text" id="village" class="input-field" placeholder="Location">
+                </div>
+                <div class="input-group">
+                    <label>Mobile</label>
+                    <input type="tel" id="mobile" class="input-field" placeholder="03xx...">
+                </div>
+            </div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px">
+                <div class="input-group">
+                    <label>Date</label>
+                    <input type="date" id="date" class="input-field">
+                </div>
+                <div class="input-group">
+                    <label>Time</label>
+                    <input type="time" id="time" class="input-field">
+                </div>
+            </div>
         </div>
-    </div>
-    
-    <div id="duesTab" class="tab-content">
+
         <div class="card">
-            <div class="dues-summary"><div>Total Outstanding Dues</div><div class="dues-amount" id="totalDuesAmount">PKR 0</div></div>
-            <input type="text" id="duesSearch" class="search-box" placeholder="🔍 Search by name or village...">
-            <div id="duesList"></div>
+            <div class="card-header">
+                <div class="card-title"><i class="fas fa-boxes-stacked"></i> Equipment</div>
+            </div>
+            <div id="itemsContainer"></div>
+            <button class="btn btn-outline" id="addEquipmentBtn"><i class="fas fa-plus"></i> Add Another Item</button>
+        </div>
+
+        <div class="card">
+            <div class="input-group">
+                <label>Advance Payment (PKR)</label>
+                <input type="number" id="advance" class="input-field" value="0" style="font-size: 18px; font-weight: 700; color: var(--primary);">
+            </div>
+            <button class="btn btn-primary" id="saveRentalBtn"><i class="fas fa-save"></i> Create Rental Entry</button>
         </div>
     </div>
     
+    <!-- DUES TAB -->
+    <div id="duesTab" class="tab-content">
+        <div class="dues-hero">
+            <p>TOTAL OUTSTANDING</p>
+            <h2 id="totalDuesAmount">PKR 0</h2>
+        </div>
+        <div class="search-container">
+            <i class="fas fa-search"></i>
+            <input type="text" id="duesSearch" class="input-field search-box" placeholder="Search by name...">
+        </div>
+        <div id="duesList"></div>
+    </div>
+    
+    <!-- RATES TAB -->
     <div id="ratesTab" class="tab-content">
         <div class="card">
-            <div class="card-title">Customize Daily Rates</div>
-            <div style="overflow-x:auto;"><table class="rates-table" id="ratesTable"><thead><tr><th>Equipment</th><th>Option</th><th>Rate (PKR/day)</th></tr></thead><tbody id="ratesTableBody"></tbody></table></div>
-            <div style="margin-top:20px; display:flex; gap:10px;"><button class="add-btn" onclick="saveAllRates()" style="background:#27ae60;">Save All Rates</button><button class="delete-btn" onclick="resetRatesToDefault()">Reset to Default</button></div>
+            <div class="card-header">
+                <div class="card-title"><i class="fas fa-tags"></i> Price List</div>
+            </div>
+            <div style="overflow-x:auto;">
+                <table style="width:100%; border-collapse: collapse; font-size: 13px;">
+                    <thead>
+                        <tr style="text-align:left; border-bottom: 2px solid #f1f5f9;">
+                            <th style="padding:10px 5px">Item</th>
+                            <th style="padding:10px 5px">Option</th>
+                            <th style="padding:10px 5px">Rate</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ratesTableBody"></tbody>
+                </table>
+            </div>
+            <div style="margin-top:20px; display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                <button class="btn btn-primary" id="saveRatesBtn">Update Prices</button>
+                <button class="btn btn-outline" id="resetRatesBtn">Reset</button>
+            </div>
         </div>
     </div>
-    
-    <div class="bottom-tab-bar">
-        <button class="tab-item active" onclick="switchTab('home')"><span class="tab-icon"><i class="fas fa-home"></i></span><span class="tab-label">Home</span></button>
-        <button class="tab-item" onclick="switchTab('create')"><span class="tab-icon"><i class="fas fa-plus-circle"></i></span><span class="tab-label">Create</span></button>
-        <button class="tab-item" onclick="switchTab('dues')"><span class="tab-icon"><i class="fas fa-rupee-sign"></i></span><span class="tab-label">Dues</span></button>
-        <button class="tab-item" onclick="switchTab('rates')"><span class="tab-icon"><i class="fas fa-sliders-h"></i></span><span class="tab-label">Rates</span></button>
+
+    <!-- ABOUT TAB (NEW) -->
+    <div id="aboutTab" class="tab-content">
+        <div class="card profile-card">
+            <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="CEO" class="profile-img" id="ceoImg">
+            <div class="ceo-name">Malik Muhammad Ali</div>
+            <div class="ceo-title">Founder & CEO, ALHAQ SHETRING CENTER</div>
+            <div class="ceo-bio">
+                With over 15 years of experience in construction equipment rental, Malik Muhammad Ali built ALHAQ SHETRING from a small local business to a trusted name in the industry. Committed to quality, transparency, and customer satisfaction.
+            </div>
+            <div class="contact-info">
+                <div><i class="fas fa-phone-alt"></i> +92 300 1234567</div>
+                <div><i class="fas fa-envelope"></i> ceo@alhaqshetring.com</div>
+                <div><i class="fas fa-map-marker-alt"></i> Lahore, Pakistan</div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title"><i class="fas fa-tools"></i> Our Equipment Fleet</div>
+            </div>
+            <div class="equipment-gallery" id="equipmentGallery"></div>
+            <p class="ceo-bio" style="margin-top: 12px; font-size: 11px; text-align: center;">* Click on any image to view larger (images loaded from online sources)</p>
+        </div>
     </div>
-    <footer>ALHAQ SHETRING CENTER © 2026</footer>
+
+    <!-- BOTTOM NAV - 5 TABS -->
+    <div class="bottom-tab-bar">
+        <button class="tab-item active" data-tab="home"><i class="fas fa-home"></i><span>Home</span></button>
+        <button class="tab-item" data-tab="create"><i class="fas fa-plus-circle"></i><span>Create</span></button>
+        <button class="tab-item" data-tab="dues"><i class="fas fa-wallet"></i><span>Dues</span></button>
+        <button class="tab-item" data-tab="rates"><i class="fas fa-cog"></i><span>Rates</span></button>
+        <button class="tab-item" data-tab="about"><i class="fas fa-info-circle"></i><span>About</span></button>
+    </div>
+
+    <footer style="text-align:center; padding: 20px; color: var(--text-muted); font-size: 11px;">
+        ALHAQ SHETRING CENTER © 2026
+    </footer>
 </div>
 
+<!-- PARTIAL RETURN MODAL -->
 <div id="returnModal" class="modal">
     <div class="modal-content">
-        <div class="modal-header"><strong>Partial Return</strong></div>
-        <div id="modalItemsList"></div>
-        <div class="modal-buttons" style="display:flex; gap:10px; margin-top:15px;"><button class="save-btn" onclick="submitPartialReturn()" style="background:#27ae60;">Confirm Return</button><button class="delete-btn" onclick="closeModal()">Cancel</button></div>
+        <h3 style="margin-bottom:15px; color: var(--primary-dark)">Partial Item Return</h3>
+        <div id="modalItemsList" style="max-height: 300px; overflow-y: auto;"></div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:20px;">
+            <button class="btn btn-primary" id="confirmPartialReturnBtn">Confirm</button>
+            <button class="btn btn-outline" id="cancelPartialReturnBtn">Cancel</button>
+        </div>
     </div>
 </div>
 
@@ -163,7 +321,7 @@
         { name: "Goorha", options: ["4ft","5ft","6ft","7ft","8ft","10ft"] },
         { name: "Electric Generator", options: ["Standard"] },
         { name: "LT", options: ["Small","Medium","Large"] },
-        { name: "Grinder Machine (steel cutter)", options: ["Standard"] },
+        { name: "Grinder Machine", options: ["Standard"] },
         { name: "Presser", options: ["Standard"] },
         { name: "Tatkeee", options: ["Standard"] },
         { name: "Beilchaa", options: ["Standard"] },
@@ -181,7 +339,7 @@
         Seerhe:{"10ft":30,"20ft":40,"25ft":45,"30ft":50,"35ft":60},
         Goorha:{"4ft":10,"5ft":12,"6ft":15,"7ft":18,"8ft":20,"10ft":25},
         "Electric Generator":{"Standard":100}, LT:{"Small":30,"Medium":50,"Large":80},
-        "Grinder Machine (steel cutter)":{"Standard":40}, Presser:{"Standard":35}, Tatkeee:{"Standard":8},
+        "Grinder Machine":{"Standard":40}, Presser:{"Standard":35}, Tatkeee:{"Standard":8},
         Beilchaa:{"Standard":5}, Kodalaaa:{"Standard":5}, Drum:{"Small":15,"Big":25}, Karheee:{"Standard":20},
         Saaare:{"Spherical (1ft)":40,"Spherical (9inch)":35,"4 Side (9/12inch)":30,"4 Side (1ft)":38},
         "Hath Gaarhai":{"Standard":25}
@@ -195,6 +353,7 @@
         else { currentRates = defaultRates; await setDoc(ref, defaultRates); }
         renderRatesTable();
     }
+    
     function renderRatesTable() {
         const tbody = document.getElementById('ratesTableBody');
         tbody.innerHTML = '';
@@ -202,267 +361,322 @@
             equip.options.forEach(opt => {
                 let rate = currentRates[equip.name]?.[opt] ?? defaultRates[equip.name]?.[opt] ?? 0;
                 let row = tbody.insertRow();
-                row.insertCell(0).innerText = equip.name;
+                row.style.borderBottom = "1px solid #f1f5f9";
+                row.insertCell(0).innerHTML = `<span style="font-weight:600">${equip.name}</span>`;
                 row.insertCell(1).innerText = opt;
                 let inp = document.createElement('input');
-                inp.type = 'number'; inp.value = rate; inp.className = 'rate-input'; inp.step = '1';
+                inp.type = 'number'; inp.value = rate; inp.className = 'input-field'; 
+                inp.style.padding = '5px 10px'; inp.style.width = '70px';
                 inp.dataset.equip = equip.name; inp.dataset.opt = opt;
                 row.insertCell(2).appendChild(inp);
             });
         });
     }
-    window.saveAllRates = async function() {
+
+    async function saveAllRates() {
         let newRates = JSON.parse(JSON.stringify(defaultRates));
-        document.querySelectorAll('#ratesTableBody .rate-input').forEach(inp => {
+        document.querySelectorAll('#ratesTableBody input').forEach(inp => {
             let equip = inp.dataset.equip, opt = inp.dataset.opt, val = parseFloat(inp.value)||0;
             if(!newRates[equip]) newRates[equip]={};
             newRates[equip][opt]=val;
         });
         await setDoc(doc(db, 'settings','equipmentRates'), newRates);
         currentRates = newRates;
-        alert("Rates saved");
-    };
-    window.resetRatesToDefault = async function() {
-        await setDoc(doc(db, 'settings','equipmentRates'), defaultRates);
-        currentRates = defaultRates;
-        renderRatesTable();
-        alert("Reset to default");
-    };
+        alert("Rates Updated!");
+    }
+
+    async function resetRatesToDefault() {
+        if(confirm("Reset all prices to default?")) {
+            await setDoc(doc(db, 'settings','equipmentRates'), defaultRates);
+            currentRates = defaultRates;
+            renderRatesTable();
+        }
+    }
+
     function getCurrentRate(equip, opt) { return currentRates[equip]?.[opt] ?? defaultRates[equip]?.[opt] ?? 0; }
     
-    function addEquipmentRow(equipIdx=0, selectedOpt=null, qty=0, customRate=null) {
+    function addEquipmentRow(equipIdx=0, selectedOpt=null, qty=0) {
         let container = document.getElementById('itemsContainer');
         let id = `eq_${Date.now()}_${equipmentCounter++}`;
         let equip = equipmentBase[equipIdx];
         let defaultOpt = selectedOpt || equip.options[0];
-        let rate = customRate ?? getCurrentRate(equip.name, defaultOpt);
-        let div = document.createElement('div'); div.className = 'equipment-item'; div.id = id;
+        let rate = getCurrentRate(equip.name, defaultOpt);
+        
+        let div = document.createElement('div'); 
+        div.className = 'equipment-item'; div.id = id;
         div.innerHTML = `
-            <div class="equipment-row">
-                <select class="eq-name">${equipmentBase.map((e,i)=>`<option value="${i}" ${i===equipIdx?'selected':''}>${e.name}</option>`).join('')}</select>
-                <select class="eq-option"></select>
-                <input type="number" class="eq-qty" value="${qty}" min="0" step="1" placeholder="Qty" style="width:70px">
-                <input type="number" class="eq-rate" value="${rate}" min="0" step="1" placeholder="Rate" style="width:80px">
-                <input type="number" class="eq-total" value="${qty*rate}" readonly style="width:70px;background:#f0f0f0">
-                <button type="button" class="remove-btn" onclick="this.closest('.equipment-item').remove()">✖</button>
+            <button class="remove-row" onclick="this.closest('.equipment-item').remove()">✖</button>
+            <div class="eq-grid">
+                <select class="input-field eq-name">${equipmentBase.map((e,i)=>`<option value="${i}" ${i===equipIdx?'selected':''}>${e.name}</option>`).join('')}</select>
+                <select class="input-field eq-option"></select>
+            </div>
+            <div class="eq-sub-grid">
+                <div class="input-group">
+                    <label>Qty</label>
+                    <input type="number" class="input-field eq-qty" value="${qty}" placeholder="0">
+                </div>
+                <div class="input-group">
+                    <label>Rate</label>
+                    <input type="number" class="input-field eq-rate" value="${rate}">
+                </div>
+                <div class="input-group">
+                    <label>Total</label>
+                    <input type="number" class="input-field eq-total" value="${qty*rate}" readonly style="background:#edf2f7; font-weight:700">
+                </div>
             </div>`;
+
         let nameSel = div.querySelector('.eq-name');
         let optSel = div.querySelector('.eq-option');
         let qtyInp = div.querySelector('.eq-qty');
         let rateInp = div.querySelector('.eq-rate');
         let totalInp = div.querySelector('.eq-total');
-        function populateOpts() {
-            let idx = parseInt(nameSel.value);
-            let eq = equipmentBase[idx];
+
+        const updateOpts = () => {
+            let eq = equipmentBase[nameSel.value];
             optSel.innerHTML = eq.options.map(o=>`<option value="${o}" ${o===defaultOpt?'selected':''}>${o}</option>`).join('');
-            let curOpt = optSel.value;
-            rateInp.value = getCurrentRate(eq.name, curOpt);
-            updateTotal();
-        }
-        function updateTotal() { totalInp.value = (parseFloat(qtyInp.value)||0) * (parseFloat(rateInp.value)||0); }
-        nameSel.addEventListener('change', () => { populateOpts(); });
-        optSel.addEventListener('change', () => {
-            let idx = parseInt(nameSel.value);
-            let eq = equipmentBase[idx];
             rateInp.value = getCurrentRate(eq.name, optSel.value);
             updateTotal();
-        });
-        qtyInp.addEventListener('input', updateTotal);
-        rateInp.addEventListener('input', updateTotal);
-        populateOpts();
+        };
+
+        const updateTotal = () => {
+            totalInp.value = (parseFloat(qtyInp.value)||0) * (parseFloat(rateInp.value)||0);
+        };
+
+        nameSel.onchange = updateOpts;
+        optSel.onchange = () => {
+            rateInp.value = getCurrentRate(equipmentBase[nameSel.value].name, optSel.value);
+            updateTotal();
+        };
+        qtyInp.oninput = updateTotal;
+        rateInp.oninput = updateTotal;
+        
+        updateOpts();
         container.appendChild(div);
     }
-    window.addEquipmentRow = () => addEquipmentRow(0);
-    
-    window.saveRental = async function() {
+
+    async function saveRental() {
         let cname = document.getElementById('customerName').value.trim();
         let vname = document.getElementById('village').value.trim();
-        if(!cname || !vname) { alert("Enter Customer Name and Village"); return; }
+        if(!cname || !vname) return alert("Please enter Customer Name and Village");
+
         let items = [];
         let grandTotal = 0;
         document.querySelectorAll('#itemsContainer .equipment-item').forEach(div => {
-            let idx = parseInt(div.querySelector('.eq-name').value);
-            let name = equipmentBase[idx].name;
+            let name = equipmentBase[div.querySelector('.eq-name').value].name;
             let opt = div.querySelector('.eq-option').value;
             let qty = parseFloat(div.querySelector('.eq-qty').value) || 0;
             let rate = parseFloat(div.querySelector('.eq-rate').value) || 0;
-            let total = qty * rate;
-            if(qty>0) { items.push({name,option:opt,quantity:qty,rate,total}); grandTotal += total; }
+            if(qty > 0) {
+                items.push({name, option:opt, quantity:qty, rate, total: qty*rate});
+                grandTotal += (qty*rate);
+            }
         });
-        if(items.length===0) { alert("Add at least one equipment"); return; }
+
+        if(items.length === 0) return alert("Please add at least one equipment item");
+
         let advance = parseFloat(document.getElementById('advance').value) || 0;
-        let balance = grandTotal - advance;
         let data = {
             customerName: cname, village: vname,
-            fatherName: document.getElementById('fatherName').value.trim(),
             mobile: document.getElementById('mobile').value.trim(),
             rentalDate: document.getElementById('date').value,
             startTime: document.getElementById('time').value,
-            items, grandTotal, advancePaid: advance, balanceDue: balance,
-            status: balance===0?"Paid":"Pending", returnLog: [],
+            items, grandTotal, advancePaid: advance, balanceDue: grandTotal - advance,
+            status: (grandTotal - advance) <= 0 ? "Paid" : "Pending",
             createdAt: new Date().toISOString()
         };
+
         try {
             await addDoc(collection(db,'rentals'), data);
-            alert("Saved!");
-            // reset form
-            document.getElementById('customerName').value = "";
-            document.getElementById('fatherName').value = "";
-            document.getElementById('village').value = "";
-            document.getElementById('mobile').value = "";
-            document.getElementById('advance').value = "0";
-            document.getElementById('itemsContainer').innerHTML = "";
-            equipmentCounter = 0;
-            addEquipmentRow(0,"8ft",0); addEquipmentRow(1,"15ft",0); addEquipmentRow(3,"Lower Quality",0); addEquipmentRow(18,"Spherical (1ft)",0); addEquipmentRow(19,"Standard",0);
-            loadAllData();
+            alert("Entry Saved Successfully!");
+            resetForm();
             switchTab('home');
-        } catch(e) { alert("Error: "+e.message); }
-    };
-    
-    async function loadAllData() {
-        // Fetch all documents and sort client-side by rentalDate or createdAt
-        const snapshot = await getDocs(collection(db, 'rentals'));
-        let docs = [];
-        snapshot.forEach(doc => docs.push({ id: doc.id, ...doc.data() }));
-        // Sort by rentalDate descending (newest first), fallback to createdAt or doc id
-        docs.sort((a,b) => {
-            let dateA = a.rentalDate || a.createdAt || '';
-            let dateB = b.rentalDate || b.createdAt || '';
-            if(dateA > dateB) return -1;
-            if(dateA < dateB) return 1;
-            return 0;
-        });
-        allRentals = docs;
-        displayHomeRecords();
-        displayDuesList();
+            loadAllData();
+        } catch(e) { alert("Error: " + e.message); }
     }
-    
-    function displayHomeRecords(search="") {
-        let container = document.getElementById('recordsList');
-        let filtered = allRentals.filter(r => 
-            r.customerName?.toLowerCase().includes(search) ||
-            r.village?.toLowerCase().includes(search) ||
-            (r.mobile && r.mobile.includes(search))
+
+    function resetForm() {
+        ['customerName','village','mobile','advance'].forEach(id => document.getElementById(id).value = id==='advance'?'0':'');
+        document.getElementById('itemsContainer').innerHTML = '';
+        setupDefaultItems();
+    }
+
+    async function loadAllData() {
+        const snapshot = await getDocs(collection(db, 'rentals'));
+        allRentals = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }))
+            .sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt));
+        renderHome();
+        renderDues();
+    }
+
+    function renderHome(search = "") {
+        const container = document.getElementById('recordsList');
+        const filtered = allRentals.filter(r => 
+            r.customerName?.toLowerCase().includes(search.toLowerCase()) ||
+            r.village?.toLowerCase().includes(search.toLowerCase())
         );
-        if(filtered.length===0) { container.innerHTML='<div class="empty-state">No records found</div>'; return; }
-        container.innerHTML = filtered.map(rec => {
-            let itemsHtml = rec.items.map(i => `<div><i class="fas fa-cog"></i> ${i.name} (${i.option}) ×${i.quantity} @ PKR ${i.rate} = PKR ${i.total}</div>`).join('');
-            return `
-                <div class="record-card">
-                    <div style="display:flex;justify-content:space-between;"><span class="customer-name">${escapeHtml(rec.customerName)}</span><span>${rec.rentalDate||'-'}</span></div>
-                    <div>📍 ${escapeHtml(rec.village)} ${rec.mobile ? `📞 ${rec.mobile}` : ''}</div>
-                    <div class="items-list">${itemsHtml}</div>
-                    <div class="amount-row"><span>Total: PKR ${rec.grandTotal}</span><span>Paid: PKR ${rec.advancePaid}</span><span class="balance">Due: PKR ${rec.balanceDue}</span></div>
-                    <div><span class="status-badge ${rec.status==='Returned'?'status-returned':'status-pending'}">${rec.status}</span></div>
-                    <div class="action-buttons">
-                        ${rec.status !== 'Returned' ? `<button class="return-full-btn" onclick="fullReturn('${rec.id}')">Full Return</button>
-                        <button class="return-partial-btn" onclick="openPartialReturn('${rec.id}')">Partial Return</button>` : ''}
-                        <button class="delete-btn" onclick="deleteRecord('${rec.id}')">Delete</button>
+
+        if(!filtered.length) {
+            container.innerHTML = `<div class="empty-state"><i class="fas fa-folder-open"></i><p>No records found</p></div>`;
+            return;
+        }
+
+        container.innerHTML = filtered.map(rec => `
+            <div class="record-card">
+                <div class="record-header">
+                    <div>
+                        <div class="record-name">${escapeHtml(rec.customerName)}</div>
+                        <div class="record-date">${rec.rentalDate} • ${rec.village}</div>
+                    </div>
+                    <span class="record-badge ${rec.status==='Returned'?'badge-returned':'badge-pending'}">${rec.status}</span>
+                </div>
+                <div class="items-summary">
+                    ${rec.items.map(i => `<div class="item-line"><span>${i.name} (${i.option}) x${i.quantity}</span><span>PKR ${i.total}</span></div>`).join('')}
+                </div>
+                <div class="record-footer">
+                    <div class="record-total">Due: PKR ${rec.balanceDue}</div>
+                    <div style="display:flex; gap:5px">
+                        ${rec.status !== 'Returned' ? `
+                            <button class="btn btn-small btn-primary" style="background:var(--success)" onclick="fullReturn('${rec.id}')">Full</button>
+                            <button class="btn btn-small btn-primary" style="background:var(--warning)" onclick="openPartialReturn('${rec.id}')">Part</button>
+                        ` : ''}
+                        <button class="btn btn-small btn-outline" style="border-color:var(--danger); color:var(--danger); width:auto" onclick="deleteRecord('${rec.id}')"><i class="fas fa-trash"></i></button>
                     </div>
                 </div>
-            `;
-        }).join('');
-    }
-    
-    function displayDuesList(search="") {
-        let due = allRentals.filter(r => r.balanceDue > 0 && r.status !== 'Returned');
-        if(search) due = due.filter(r => r.customerName.toLowerCase().includes(search) || r.village.toLowerCase().includes(search));
-        let total = due.reduce((s,r)=>s+(r.balanceDue||0),0);
-        document.getElementById('totalDuesAmount').innerHTML = `PKR ${total}`;
-        let container = document.getElementById('duesList');
-        if(due.length===0) { container.innerHTML='<div class="empty-state">No dues</div>'; return; }
-        container.innerHTML = due.map(rec => `
-            <div class="record-card" style="border-left-color:#c0392b;">
-                <div><strong>${escapeHtml(rec.customerName)}</strong> | ${rec.rentalDate}</div>
-                <div>📍 ${rec.village} ${rec.mobile ? `📞 ${rec.mobile}` : ''}</div>
-                <div class="amount-row"><span>Total: PKR ${rec.grandTotal}</span><span>Paid: PKR ${rec.advancePaid}</span><span class="balance">Due: PKR ${rec.balanceDue}</span></div>
-                <div class="action-buttons"><button class="return-full-btn" onclick="fullReturn('${rec.id}')">Full Return</button></div>
             </div>
         `).join('');
     }
-    
+
+    function renderDues(search = "") {
+        const dueList = allRentals.filter(r => r.balanceDue > 0 && r.status !== 'Returned');
+        const total = dueList.reduce((sum, r) => sum + r.balanceDue, 0);
+        document.getElementById('totalDuesAmount').innerText = `PKR ${total.toLocaleString()}`;
+        
+        const container = document.getElementById('duesList');
+        let filtered = dueList;
+        if(search) filtered = dueList.filter(r => r.customerName?.toLowerCase().includes(search.toLowerCase()));
+        
+        container.innerHTML = filtered.map(rec => `
+            <div class="record-card" style="border-left-color: var(--danger)">
+                <div class="record-name">${escapeHtml(rec.customerName)}</div>
+                <div class="record-date">${rec.village} • ${rec.mobile}</div>
+                <div class="record-total" style="color:var(--danger); margin-top:8px">Outstanding: PKR ${rec.balanceDue}</div>
+                <button class="btn btn-outline btn-small" style="margin-top:10px" onclick="fullReturn('${rec.id}')">Settle Balance</button>
+            </div>
+        `).join('');
+    }
+
+    // Equipment Gallery Data (online image links) – replace with your own image URLs
+    const equipmentGalleryData = [
+        { name: "Stand", options: "8ft, 10ft, 15ft/20ft", imgUrl: "https://via.placeholder.com/60?text=Stand" },
+        { name: "Banas/Bashona", options: "15ft to 35ft", imgUrl: "https://via.placeholder.com/60?text=Bamboo" },
+        { name: "Takhtha", options: "10ft", imgUrl: "https://via.placeholder.com/60?text=Plank" },
+        { name: "Dagee", options: "Lower/High Quality", imgUrl: "https://via.placeholder.com/60?text=Dagee" },
+        { name: "Beem Farma", options: "4 to 18 inch", imgUrl: "https://via.placeholder.com/60?text=Beam" },
+        { name: "Pailor Farma", options: "4 sides / Spherical", imgUrl: "https://via.placeholder.com/60?text=Pillar" },
+        { name: "Seerhe", options: "10ft to 35ft", imgUrl: "https://via.placeholder.com/60?text=Ladder" },
+        { name: "Goorha", options: "4ft to 10ft", imgUrl: "https://via.placeholder.com/60?text=Goorha" },
+        { name: "Saaare", options: "Spherical & 4 Side", imgUrl: "https://via.placeholder.com/60?text=Saaare" },
+        { name: "Generator & Machinery", options: "Electric, LT, Grinder, Presser", imgUrl: "https://via.placeholder.com/60?text=Machinery" }
+    ];
+
+    function renderEquipmentGallery() {
+        const container = document.getElementById('equipmentGallery');
+        container.innerHTML = equipmentGalleryData.map(eq => `
+            <div class="equip-item">
+                <img src="${eq.imgUrl}" alt="${eq.name}" class="equip-img" onclick="window.open('${eq.imgUrl}', '_blank')">
+                <div class="equip-details">
+                    <div class="equip-name">${eq.name}</div>
+                    <div class="equip-options">${eq.options}</div>
+                </div>
+            </div>
+        `).join('');
+    }
+
     window.fullReturn = async function(id) {
-        let retDate = prompt("Return date (YYYY-MM-DD):", new Date().toISOString().slice(0,10));
-        if(!retDate) return;
-        let retTime = prompt("Return time (HH:MM):", new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'}));
-        if(!retTime) return;
-        await updateDoc(doc(db,'rentals',id), { returnDate: retDate, returnTime: retTime, status: "Returned", balanceDue: 0 });
-        alert("Full return recorded");
-        loadAllData();
-    };
-    
-    window.openPartialReturn = function(id) {
-        let rental = allRentals.find(r => r.id === id);
-        if(!rental) return;
-        pendingReturnId = id;
-        let modal = document.getElementById('returnModal');
-        let container = document.getElementById('modalItemsList');
-        container.innerHTML = rental.items.map((item,idx) => `
-            <div class="return-item-row">
-                <span><strong>${item.name}</strong> (${item.option}) - Taken: ${item.quantity}</span>
-                <input type="number" id="ret_qty_${idx}" placeholder="Qty to return" min="0" max="${item.quantity}" value="0" class="return-item-qty">
-            </div>
-        `).join('');
-        modal.style.display = "flex";
-    };
-    window.closeModal = () => { document.getElementById('returnModal').style.display = "none"; pendingReturnId = null; };
-    window.submitPartialReturn = async function() {
-        if(!pendingReturnId) return;
-        let rental = allRentals.find(r => r.id === pendingReturnId);
-        let items = rental.items;
-        let returnQtys = [];
-        let allZero = true;
-        for(let i=0;i<items.length;i++) {
-            let qty = parseInt(document.getElementById(`ret_qty_${i}`)?.value) || 0;
-            returnQtys.push(qty);
-            if(qty>0) allZero=false;
+        if(confirm("Mark as fully returned and settled?")) {
+            await updateDoc(doc(db,'rentals',id), { status: "Returned", balanceDue: 0 });
+            loadAllData();
         }
-        if(allZero) { alert("Enter at least one quantity"); return; }
-        let newItems = [], newGrandTotal = 0;
-        for(let i=0;i<items.length;i++) {
-            let remaining = items[i].quantity - returnQtys[i];
-            if(remaining>0) {
-                let ni = {...items[i], quantity: remaining, total: remaining * items[i].rate};
-                newItems.push(ni);
-                newGrandTotal += ni.total;
-            }
-        }
-        let newReturnLog = [...(rental.returnLog||[]), {date:new Date().toISOString().slice(0,10), itemsReturned:returnQtys}];
-        let newStatus = newItems.length===0 ? "Returned" : "Pending";
-        let newBalance = newGrandTotal - rental.advancePaid;
-        if(newStatus==="Returned") newBalance = 0;
-        await updateDoc(doc(db,'rentals',pendingReturnId), {items:newItems, grandTotal:newGrandTotal, balanceDue:newBalance, status:newStatus, returnLog:newReturnLog});
-        alert("Partial return recorded");
-        closeModal();
-        loadAllData();
     };
-    
+
     window.deleteRecord = async function(id) {
-        if(confirm("Delete permanently?")) {
+        if(confirm("Permanently delete this record?")) {
             await deleteDoc(doc(db,'rentals',id));
             loadAllData();
         }
     };
-    
-    function escapeHtml(str) { return (str||'').replace(/[&<>]/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[m])); }
-    
-    window.switchTab = function(tab) {
-        document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
-        document.querySelectorAll('.tab-item').forEach(btn=>btn.classList.remove('active'));
-        if(tab==='home') { document.getElementById('homeTab').classList.add('active'); document.querySelector('.tab-item:first-child').classList.add('active'); displayHomeRecords(); }
-        else if(tab==='create') { document.getElementById('createTab').classList.add('active'); document.querySelectorAll('.tab-item')[1].classList.add('active'); }
-        else if(tab==='dues') { document.getElementById('duesTab').classList.add('active'); document.querySelectorAll('.tab-item')[2].classList.add('active'); displayDuesList(); }
-        else if(tab==='rates') { document.getElementById('ratesTab').classList.add('active'); document.querySelectorAll('.tab-item')[3].classList.add('active'); renderRatesTable(); }
+
+    window.switchTab = (tab) => {
+        document.querySelectorAll('.tab-content, .tab-item').forEach(el => el.classList.remove('active'));
+        document.getElementById(tab + 'Tab').classList.add('active');
+        const idx = {home:0, create:1, dues:2, rates:3, about:4}[tab];
+        document.querySelectorAll('.tab-item')[idx].classList.add('active');
     };
-    
-    document.getElementById('homeSearch')?.addEventListener('input', e=>displayHomeRecords(e.target.value.toLowerCase()));
-    document.getElementById('duesSearch')?.addEventListener('input', e=>displayDuesList(e.target.value.toLowerCase()));
+
+    function setupDefaultItems() {
+        addEquipmentRow(0,"8ft",0); 
+        addEquipmentRow(1,"15ft",0); 
+        addEquipmentRow(3,"Lower Quality",0);
+    }
+
+    // Modal Functions
+    window.openPartialReturn = (id) => {
+        pendingReturnId = id;
+        const rec = allRentals.find(r => r.id === id);
+        if(!rec) return;
+        document.getElementById('modalItemsList').innerHTML = rec.items.map((item, i) => `
+            <div style="display:flex; justify-content:space-between; align-items:center; padding:10px; border-bottom:1px solid #eee">
+                <span style="font-size:13px">${item.name} (${item.option}) - ${item.quantity}</span>
+                <input type="number" id="mod_qty_${i}" class="input-field" style="width:60px; padding:5px" value="0" max="${item.quantity}">
+            </div>
+        `).join('');
+        document.getElementById('returnModal').style.display = 'flex';
+    };
+    window.closeModal = () => document.getElementById('returnModal').style.display = 'none';
+    window.submitPartialReturn = async () => {
+        const rec = allRentals.find(r => r.id === pendingReturnId);
+        if(!rec) return;
+        let newItems = [];
+        let totalVal = 0;
+        rec.items.forEach((item, i) => {
+            let ret = parseInt(document.getElementById(`mod_qty_${i}`).value) || 0;
+            let rem = item.quantity - ret;
+            if(rem > 0) {
+                newItems.push({...item, quantity: rem, total: rem * item.rate});
+                totalVal += (rem * item.rate);
+            }
+        });
+        
+        await updateDoc(doc(db,'rentals',pendingReturnId), {
+            items: newItems,
+            grandTotal: totalVal,
+            balanceDue: Math.max(0, totalVal - rec.advancePaid),
+            status: newItems.length === 0 ? "Returned" : "Pending"
+        });
+        closeModal();
+        loadAllData();
+    };
+
+    function escapeHtml(str) { return (str||'').replace(/[&<>]/g, m=> ({'&':'&amp;','<':'&lt;','>':'&gt;'})[m]); }
+
+    // Event listeners for buttons (instead of inline)
+    document.getElementById('addEquipmentBtn').addEventListener('click', () => addEquipmentRow());
+    document.getElementById('saveRentalBtn').addEventListener('click', saveRental);
+    document.getElementById('saveRatesBtn').addEventListener('click', saveAllRates);
+    document.getElementById('resetRatesBtn').addEventListener('click', resetRatesToDefault);
+    document.getElementById('confirmPartialReturnBtn').addEventListener('click', () => window.submitPartialReturn());
+    document.getElementById('cancelPartialReturnBtn').addEventListener('click', () => window.closeModal());
+    document.querySelectorAll('.tab-item').forEach(btn => btn.addEventListener('click', () => switchTab(btn.dataset.tab)));
+    document.getElementById('homeSearch').addEventListener('input', e => renderHome(e.target.value));
+    document.getElementById('duesSearch').addEventListener('input', e => renderDues(e.target.value));
     document.getElementById('date').valueAsDate = new Date();
-    document.getElementById('time').value = new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
+    document.getElementById('time').value = new Date().toTimeString().slice(0,5);
     
+    // Initialize
     await loadRates();
-    addEquipmentRow(0,"8ft",0); addEquipmentRow(1,"15ft",0); addEquipmentRow(3,"Lower Quality",0); addEquipmentRow(18,"Spherical (1ft)",0); addEquipmentRow(19,"Standard",0);
-    await loadAllData();
+    setupDefaultItems();
+    loadAllData();
+    renderEquipmentGallery();
 </script>
 </body>
 </html>
