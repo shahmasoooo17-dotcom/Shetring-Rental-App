@@ -152,7 +152,7 @@
 <div class="app-container">
     <div class="app-header">
         <h1><i class="fas fa-layer-group"></i> ALHAQ SHETRING PRO</h1>
-        <span>Rental Management System • v2.1</span>
+        <span>Rental Management System • v2.2</span>
     </div>
     
     <!-- HOME TAB -->
@@ -164,7 +164,7 @@
         <div id="recordsList"></div>
     </div>
     
-    <!-- CREATE TAB -->
+    <!-- CREATE TAB (includes CNIC field) -->
     <div id="createTab" class="tab-content">
         <div class="card">
             <div class="card-header">
@@ -173,6 +173,10 @@
             <div class="input-group">
                 <label>Customer Name *</label>
                 <input type="text" id="customerName" class="input-field" placeholder="Full Name">
+            </div>
+            <div class="input-group">
+                <label>CNIC (Computerized National ID Card)</label>
+                <input type="text" id="cnic" class="input-field" placeholder="12345-1234567-1">
             </div>
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px">
                 <div class="input-group">
@@ -251,19 +255,19 @@
         </div>
     </div>
 
-    <!-- ABOUT TAB (NEW) -->
+    <!-- ABOUT TAB (CEO + Equipment Gallery) -->
     <div id="aboutTab" class="tab-content">
         <div class="card profile-card">
             <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="CEO" class="profile-img" id="ceoImg">
-            <div class="ceo-name">Malik Muhammad Ali</div>
+            <div class="ceo-name">Muhammad Zahid Shah</div>
             <div class="ceo-title">Founder & CEO, ALHAQ SHETRING CENTER</div>
             <div class="ceo-bio">
-                With over 15 years of experience in construction equipment rental, Malik Muhammad Ali built ALHAQ SHETRING from a small local business to a trusted name in the industry. Committed to quality, transparency, and customer satisfaction.
+                With over 15 years of experience in construction equipment rental, Muhammad Zahid Shah built ALHAQ SHETRING from a small local business to a trusted name in the industry. Committed to quality, transparency, and customer satisfaction.
             </div>
             <div class="contact-info">
-                <div><i class="fas fa-phone-alt"></i> +92 300 1234567</div>
-                <div><i class="fas fa-envelope"></i> ceo@alhaqshetring.com</div>
-                <div><i class="fas fa-map-marker-alt"></i> Lahore, Pakistan</div>
+                <div><i class="fas fa-phone-alt"></i> +92 302 5714252</div>
+                <div><i class="fas fa-envelope"></i> shahmasoooo17@gmail.com</div>
+                <div><i class="fas fa-map-marker-alt"></i> Custom Check Post, Sakhakot, Main road Malakand</div>
             </div>
         </div>
 
@@ -272,7 +276,7 @@
                 <div class="card-title"><i class="fas fa-tools"></i> Our Equipment Fleet</div>
             </div>
             <div class="equipment-gallery" id="equipmentGallery"></div>
-            <p class="ceo-bio" style="margin-top: 12px; font-size: 11px; text-align: center;">* Click on any image to view larger (images loaded from online sources)</p>
+            <p class="ceo-bio" style="margin-top: 12px; font-size: 11px; text-align: center;">* Click on any image to view larger (images from online sources – replace URLs)</p>
         </div>
     </div>
 
@@ -390,11 +394,13 @@
             await setDoc(doc(db, 'settings','equipmentRates'), defaultRates);
             currentRates = defaultRates;
             renderRatesTable();
+            alert("Reset to default rates");
         }
     }
 
     function getCurrentRate(equip, opt) { return currentRates[equip]?.[opt] ?? defaultRates[equip]?.[opt] ?? 0; }
     
+    // Equipment row function – exposed globally
     function addEquipmentRow(equipIdx=0, selectedOpt=null, qty=0) {
         let container = document.getElementById('itemsContainer');
         let id = `eq_${Date.now()}_${equipmentCounter++}`;
@@ -453,6 +459,9 @@
         updateOpts();
         container.appendChild(div);
     }
+    
+    // Expose globally so inline onclick works (for remove buttons, but also for button)
+    window.addEquipmentRow = addEquipmentRow;
 
     async function saveRental() {
         let cname = document.getElementById('customerName').value.trim();
@@ -476,7 +485,9 @@
 
         let advance = parseFloat(document.getElementById('advance').value) || 0;
         let data = {
-            customerName: cname, village: vname,
+            customerName: cname,
+            cnic: document.getElementById('cnic').value.trim(),
+            village: vname,
             mobile: document.getElementById('mobile').value.trim(),
             rentalDate: document.getElementById('date').value,
             startTime: document.getElementById('time').value,
@@ -495,7 +506,9 @@
     }
 
     function resetForm() {
-        ['customerName','village','mobile','advance'].forEach(id => document.getElementById(id).value = id==='advance'?'0':'');
+        ['customerName','cnic','village','mobile','advance'].forEach(id => {
+            document.getElementById(id).value = id==='advance' ? '0' : '';
+        });
         document.getElementById('itemsContainer').innerHTML = '';
         setupDefaultItems();
     }
@@ -529,6 +542,7 @@
                     </div>
                     <span class="record-badge ${rec.status==='Returned'?'badge-returned':'badge-pending'}">${rec.status}</span>
                 </div>
+                ${rec.cnic ? `<div class="record-info"><i class="fas fa-id-card"></i> CNIC: ${rec.cnic}</div>` : ''}
                 <div class="items-summary">
                     ${rec.items.map(i => `<div class="item-line"><span>${i.name} (${i.option}) x${i.quantity}</span><span>PKR ${i.total}</span></div>`).join('')}
                 </div>
@@ -565,7 +579,7 @@
         `).join('');
     }
 
-    // Equipment Gallery Data (online image links) – replace with your own image URLs
+    // Equipment Gallery Data (replace image URLs with your own)
     const equipmentGalleryData = [
         { name: "Stand", options: "8ft, 10ft, 15ft/20ft", imgUrl: "https://via.placeholder.com/60?text=Stand" },
         { name: "Banas/Bashona", options: "15ft to 35ft", imgUrl: "https://via.placeholder.com/60?text=Bamboo" },
@@ -592,6 +606,7 @@
         `).join('');
     }
 
+    // Global functions for buttons
     window.fullReturn = async function(id) {
         if(confirm("Mark as fully returned and settled?")) {
             await updateDoc(doc(db,'rentals',id), { status: "Returned", balanceDue: 0 });
@@ -619,7 +634,7 @@
         addEquipmentRow(3,"Lower Quality",0);
     }
 
-    // Modal Functions
+    // Modal functions
     window.openPartialReturn = (id) => {
         pendingReturnId = id;
         const rec = allRentals.find(r => r.id === id);
@@ -659,7 +674,7 @@
 
     function escapeHtml(str) { return (str||'').replace(/[&<>]/g, m=> ({'&':'&amp;','<':'&lt;','>':'&gt;'})[m]); }
 
-    // Event listeners for buttons (instead of inline)
+    // Event listeners for static buttons
     document.getElementById('addEquipmentBtn').addEventListener('click', () => addEquipmentRow());
     document.getElementById('saveRentalBtn').addEventListener('click', saveRental);
     document.getElementById('saveRatesBtn').addEventListener('click', saveAllRates);
